@@ -87,3 +87,8 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# szmania
+*.tmp
+*.cfg
+.idea/
