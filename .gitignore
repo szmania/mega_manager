@@ -90,5 +90,6 @@ ENV/
 
 # szmania
 *.tmp
+*.log
 *.cfg
 .idea/
