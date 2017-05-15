@@ -1089,6 +1089,7 @@ class MegaManager(object):
         except NameError:
             print("self.unableToCompressVideoFiles wasn't defined!")
 
+
 def size_format(b):
     if b < 1000:
         return '%i' % b + 'B'
