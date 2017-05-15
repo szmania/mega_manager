@@ -1081,13 +1081,13 @@ class MegaManager(object):
             self.unableToCompressImageFiles
             self._dump_unableToCompressImageFileList()
         except NameError:
-            print "self.unableToCompressImageFiles wasn't defined!"
+            print("self.unableToCompressImageFiles wasn't defined!")
 
         try:
             self.unableToCompressVideoFiles
             self._dump_unableToCompressVideoFileList()
         except NameError:
-            print "self.unableToCompressVideoFiles wasn't defined!"
+            print("self.unableToCompressVideoFiles wasn't defined!")
 
 def size_format(b):
     if b < 1000:
