@@ -10,6 +10,7 @@
 
 
 from argparse import ArgumentParser
+from datetime import datetime
 from logging import DEBUG, getLogger, FileHandler, Formatter, StreamHandler
 from os import chdir, getpid, listdir, path, remove, rename, walk
 from psutil import IDLE_PRIORITY_CLASS, Process
@@ -36,7 +37,7 @@ REMOTE_ROOT = ''
 
 WORKING_DIR = path.dirname(path.realpath(__file__))
 
-TEMP_LOGFILE_PATH = gettempdir() + '\\%d.tmp' % randint(0, 9999999999)
+TEMP_LOGFILE_PATH = gettempdir() + '\\megaManager_error_files_%d.tmp' % randint(0, 9999999999)
 
 COMPRESSED_IMAGES_FILE =  WORKING_DIR + "\\compressed_images.tmp"
 UNABLE_TO_COMPRESS_IMAGES_FILE =  WORKING_DIR + "\\unable_to_compress_images.tmp"
@@ -56,16 +57,18 @@ class MegaManager(object):
         self.download = None
         self.upload = None
         self.removeRemote = None
+        self.removeIncomplete = None
         self.compress = None
         self.compressImages = None
         self.compressVideos = None
         self.logLevel = None
-        
-        if path.getsize(LOGFILE_MEGA) > 10000000:
-            try:
-                remove(LOGFILE_MEGA)
-            except Exception as e:
-                pass
+
+        if path.exists(LOGFILE_MEGA):
+            if path.getsize(LOGFILE_MEGA) > 10000000:
+                try:
+                    remove(LOGFILE_MEGA)
+                except Exception as e:
+                    pass
 
 
         self._assign_attributes(**kwargs)
@@ -274,6 +277,7 @@ class MegaManager(object):
             if self.removeRemote:
                 self._create_threads_remote_file_removal()
 
+
             if self.compress:
                 self._create_threads_compress_image_files()
                 self._create_threads_compress_video_files()
@@ -462,7 +466,7 @@ class MegaManager(object):
             self._find_video_files_to_compress(account['user'], account['pass'])
             sleep(self._get_sleep_time())
 
-    def _delete_local_incomplete_files_from_account(self, username, password, remotePath=REMOTE_ROOT):
+    def _delete_local_incomplete_files_from_account(self, username, password):
         """
         Delete incomplete files.
         
@@ -493,8 +497,8 @@ class MegaManager(object):
                     line_split = line.split('/')
                     if len(line_split) > 1:
                         remoteFilePath = '/'+ '/'.join(line_split[1:])
-                        if remotePath in remoteFilePath:
-                            remote_root = remotePath.replace('/', '\\')
+                        if self.remoteRoot in remoteFilePath:
+                            remote_root = self.remoteRoot.replace('/', '\\')
                             local_root = self.localRoot
                             conv_remoteFilePath = remoteFilePath.replace('/', '\\')
                             localFilePath = conv_remoteFilePath.replace(remote_root, local_root)
@@ -509,7 +513,7 @@ class MegaManager(object):
                                         logger.debug(' Access-error on file "' + localFilePath + '"! \n' + str(e))
 
 
-    def _get_remote_file_size(self, username, password, localFilePath, remotePath=REMOTE_ROOT):
+    def _get_remote_file_size(self, username, password, localFilePath):
         """
         Get remote file sizes of equivalent local file path
 
@@ -536,7 +540,7 @@ class MegaManager(object):
 
             chdir('%s' % self.megaToolsPath)
 
-            cmd = 'start /B megals -ln -u %s -p %s "%s"' % (username, password, remotePath + subPath)
+            cmd = 'start /B megals -ln -u %s -p %s "%s"' % (username, password, self.remoteRoot + subPath)
             proc = Popen(cmd, stdout=PIPE, shell=True)
 
             (out, err) = proc.communicate()
@@ -544,12 +548,54 @@ class MegaManager(object):
             if len(line_split) > 2:
                 remoteFileSize = line_split[3]
 
-                return remoteFileSize, remotePath + subPath
+                return remoteFileSize, self.remoteRoot + subPath
 
         return 0, ''
 
+    def _get_remote_file_modified_date(self, username, password, localFilePath):
+        """
+        Get remote file modified date of equivalent local file path
 
-    def _get_remote_dir_size(self, user, password, localDirPath, remotePath=REMOTE_ROOT):
+        :param username: username for MEGA account
+        :type username: string
+
+        :param password: password for MEGA account
+        :type password: string
+
+        :param localFilePath: Local file path of remote file size to get
+        :type localFilePath: string
+
+        :return tuple: remote file modified data and remote file path
+        """
+
+        logger = getLogger('MegaManager._get_remote_file_modified_date')
+        logger.setLevel(self.logLevel)
+
+        LOCAL_ROOT_adj = sub('\\\\', '/', self.localRoot)
+        localFilePath_adj = sub('\\\\', '/', localFilePath)
+        postfix = split(LOCAL_ROOT_adj, localFilePath_adj)
+
+        if len(postfix) > 1:
+            subPath = postfix[1]
+
+            chdir('%s' % self.megaToolsPath)
+
+            cmd = 'start /B megals -ln -u %s -p %s "%s"' % (username, password, self.remoteRoot + subPath)
+            proc = Popen(cmd, stdout=PIPE, shell=True)
+
+            (out, err) = proc.communicate()
+            line_split = out.split()
+            if len(line_split) > 2:
+                remoteFileModifiedDate = line_split[4]
+                remoteFileModifiedTime = line_split[5]
+
+                remoteFileModifiedDate_time = '%s %s' % (remoteFileModifiedDate, remoteFileModifiedTime)
+
+                return remoteFileModifiedDate_time, self.remoteRoot + subPath
+
+        return 0, ''
+
+    def _get_remote_dir_size(self, user, password, localDirPath):
         """
         Get remote directory sizes of equivalent local file path
 
@@ -576,7 +622,7 @@ class MegaManager(object):
 
             chdir('%s' % self.megaToolsPath)
 
-            cmd = 'start /B megals -lnR -u %s -p %s "%s"' % (user, password, remotePath + subPath)
+            cmd = 'start /B megals -lnR -u %s -p %s "%s"' % (user, password, self.remoteRoot + subPath)
             proc = Popen(cmd, stdout=PIPE, shell=True)
 
             (out, err) = proc.communicate()
@@ -590,7 +636,7 @@ class MegaManager(object):
                         totalRemoteDirSize = totalRemoteDirSize + int(remoteFileSize)
 
 
-            return totalRemoteDirSize, remotePath + subPath
+            return totalRemoteDirSize, self.remoteRoot + subPath
 
         return 0, ''
 
@@ -607,7 +653,9 @@ class MegaManager(object):
 
         logger = getLogger('MegaManager._remove_incomplete_files')
         logger.setLevel(self.logLevel)
-        
+
+        logger.debug(' Removing incomplete files.')
+
         temp_stderr_file = open(temp_logFile_path, "r")
         # with open(TEMP_LOGFILE_PATH, 'r') as temp_stderr_file:
         #     for line in temp_stderr_file:
@@ -617,17 +665,19 @@ class MegaManager(object):
                 localFilePath = split('already exists at ', line)[1].replace('\n', '').replace('\r', '')
                 if path.exists(localFilePath):
                     localFileSize = path.getsize(localFilePath)
-
+                    localFileModifiedDate = datetime.fromtimestamp(path.getmtime(localFilePath))
+                    # dt = datetime.strptime(localFileModifiedDate, "%Y-%m-%d %H:%M:%S.%fZ")
+                    localFileModifiedDate = localFileModifiedDate.strftime('%Y-%m-%d %H:%M:%S')
                     split_line = split(' - ', split(':', line)[0])
 
                     if len(split_line) > 1:
                         user = split_line[0]
                         password = split_line[1]
                         remoteFileSize, remoteFilePath = self._get_remote_file_size(user, password, localFilePath)
+                        remoteFileModifiedDate, remoteFilePath = self._get_remote_file_modified_date(user, password, localFilePath)
 
                         if str(remoteFileSize).isdigit():
-                        # if isinstance(remoteFileSize, (int, long)):
-                            if localFileSize < int(remoteFileSize):
+                            if int(localFileSize) < int(remoteFileSize) and localFileModifiedDate == remoteFileModifiedDate:
                                 logger.debug(' File incomplete. Deleting file "%s"' % localFilePath)
 
                                 try:
@@ -651,7 +701,7 @@ class MegaManager(object):
         temp_stderr_file.close()
 
 
-    def _download_file(self, username, password, localPath, remotePath):
+    def _download_file(self, username, password):
         """
         Download a remote file.
 
@@ -659,10 +709,6 @@ class MegaManager(object):
         :type username: string
         :param password: password of account to download file from
         :type password: string
-        :param localPath: Local path to download file to
-        :type localPath: string
-        :param remotePath: Remote path of file to download
-        :type remotePath: string
 
         :return :
         """
@@ -670,11 +716,11 @@ class MegaManager(object):
         logger = getLogger('MegaManager._download_file')
         logger.setLevel(self.logLevel)
 
-        logger.debug(' MEGA downloading file from account "%s" - "%s" to "%s"' % (username, remotePath, localPath))
+        logger.debug(' MEGA downloading file from account "%s" - "%s" to "%s"' % (username, self.remoteRoot, self.localRoot))
         logFile = open(LOGFILE_MEGA, 'a')
 
         chdir('%s' % self.megaToolsPath)
-        cmd = 'start /B megaget -u %s -p %s --path "%s" "%s"' % (username, password, localPath, remotePath)
+        cmd = 'start /B megaget -u %s -p %s --path "%s" "%s"' % (username, password, self.localRoot, self.remoteRoot)
         proc = Popen(cmd, stdout=logFile, stderr=logFile)
 
         while not proc.poll():
@@ -683,7 +729,7 @@ class MegaManager(object):
         logFile.close()
 
 
-    def _download_account_files(self, username, password, localPath=LOCAL_ROOT, remotePath=REMOTE_ROOT):
+    def _download_account_files(self, username, password):
         """
         Download all account files.
 
@@ -691,10 +737,10 @@ class MegaManager(object):
         :type username: string
         :param password: password of account to download file from
         :type password: string
-        :param localPath: Local path to download file to
-        :type localPath: string
-        :param remotePath: Remote path of file to download
-        :type remotePath: string
+        :param self.localRoot: Local path to download file to
+        :type self.localRoot: string
+        :param self.remoteRoot: Remote path of file to download
+        :type self.remoteRoot: string
 
         :return :
         """
@@ -703,7 +749,8 @@ class MegaManager(object):
         logger.setLevel(self.logLevel)
 
 
-        logger.debug(' MEGA downloading directory from account "%s" from "%s" to "%s"' % (username, localPath, remotePath))
+
+        logger.debug(' MEGA downloading directory from account "%s" from "%s" to "%s"' % (username, self.localRoot, self.remoteRoot))
         logFile = open(LOGFILE_MEGA, 'a')
 
         # logFile_stdout = open(LOGFILE_STDOUT, 'a')
@@ -711,15 +758,15 @@ class MegaManager(object):
 
 
         chdir('%s' % self.megaToolsPath)
-        # cmd = ['megacopy', '--download', '-u', '%s' % username, '-p', '%s' % password, '--local', '"%s"' % localPath, '--remote', '"%s"' % remotePath]
+        # cmd = ['megacopy', '--download', '-u', '%s' % username, '-p', '%s' % password, '--local', '"%s"' % self.localRoot, '--remote', '"%s"' % self.remoteRoot]
         # proc = Popen(cmd, stdout=PIPE, shell=True)
         # (out, err) = proc.communicate()
 
-        # cmd = 'megacopy --download -u %s -p %s --local "%s" --remote "%s"' % (username, password, LOCAL_ROOT, remotePath)
+        # cmd = 'megacopy --download -u %s -p %s --local "%s" --remote "%s"' % (username, password, LOCAL_ROOT, self.remoteRoot)
 
-        cmd = 'start "" /B megacopy --download -u %s -p %s --local "%s" --remote "%s"' % (username, password, localPath, remotePath)
+        cmd = 'start "" /B megacopy --download -u %s -p %s --local "%s" --remote "%s"' % (username, password, self.localRoot, self.remoteRoot)
         proc = Popen(cmd, stdout=logFile, stderr=PIPE, shell=True)
-        logger.debug('%s - %s: %s \n' % (username, password, cmd))
+        logger.debug(' Executing: %s \n' % (cmd))
 
         # out, err = proc.communicate()
         # proc.wait()
@@ -736,7 +783,9 @@ class MegaManager(object):
             temp_logFile_stderr.write('%s - %s: %s' % (username, password, err))
             # sleep(10)
 
-        self._remove_incomplete_files(TEMP_LOGFILE_PATH)
+
+        if self.removeIncomplete:
+            self._remove_incomplete_files(TEMP_LOGFILE_PATH)
 
         output = proc.communicate()[0]
         exitCode = proc.returncode
@@ -779,6 +828,7 @@ class MegaManager(object):
                         megaFileThreads_found = True
 
                 if not megaFileThreads_found and not megaFileFinished:
+                    self._dump_accounts_details_dict()
                     logger.info(' "%s" file creation complete!' % self.megaAccountsData)
                     megaFileFinished = True
             else:
@@ -786,7 +836,7 @@ class MegaManager(object):
                 return
 
 
-    def _get_remote_dirs(self, username, password, remotePath=REMOTE_ROOT):
+    def _get_remote_dirs(self, username, password):
         """
         Get remote directories
         
@@ -794,8 +844,8 @@ class MegaManager(object):
         :type username: string
         :param password: password of account to get remote directories from
         :type password: string
-        :param remotePath: remote path to search directories
-        :type remotePath: string
+        :param self.remoteRoot: remote path to search directories
+        :type self.remoteRoot: string
 
         :return: returns list of directories 
         :type: list of strings
@@ -807,7 +857,7 @@ class MegaManager(object):
         logger.debug(' Get remote directories.')
 
         chdir('%s' % self.megaToolsPath)
-        cmd = ['start', '/B', 'megals', '-u', '%s' % username, '-p', '%s' % password, '"%s"' % remotePath]
+        cmd = ['start', '/B', 'megals', '-u', '%s' % username, '-p', '%s' % password, '"%s"' % self.remoteRoot]
         proc = Popen(cmd, stdout=PIPE, shell=True)
 
         (out, err) = proc.communicate()
@@ -815,15 +865,12 @@ class MegaManager(object):
         dirs = out.split('\r\n')
         dirList = []
         for dir in dirs:
-            dirName = sub('%s' % remotePath, '', dir)
+            dirName = sub('%s' % self.remoteRoot, '', dir)
             if not dirName == '':
                 dirList.append(sub('/', '', dirName))
 
         return dirList
 
-
-        # cmd = 'megaals -u %s -p %s %s' % (username, password, remotePath)
-        # proc1 = os.system(cmd)
 
     def _get_accounts_user_pass(self):
         """
@@ -866,7 +913,7 @@ class MegaManager(object):
         return foundUserPass
 
 
-    def _upload_to_account(self, username, password, localPath=LOCAL_ROOT, remotePath=REMOTE_ROOT):
+    def _upload_to_account(self, username, password):
         """
         Upload files to account.
 
@@ -874,10 +921,10 @@ class MegaManager(object):
         :type username: string
         :param password: password of account to upload to
         :type password: string
-        :param localPath: Local path to upload from
-        :type localPath: string
-        :param remotePath: Remote path of to upload to
-        :type remotePath: string
+        :param self.localRoot: Local path to upload from
+        :type self.localRoot: string
+        :param self.remoteRoot: Remote path of to upload to
+        :type self.remoteRoot: string
 
         :return: returns list of dictionaries holding user and pass
         :type: list of dictionaries
@@ -889,10 +936,10 @@ class MegaManager(object):
         logger.debug(' Starting uploading for %s - %s' % (username, password))
 
 
-        localPath_adj = sub('\\\\', '/', localPath)
+        self.localRoot_adj = sub('\\\\', '/', self.localRoot)
         chdir('%s' % self.megaToolsPath)
 
-        cmd = 'megals -ln -u %s -p %s "%s"' % (username, password, remotePath)
+        cmd = 'megals -ln -u %s -p %s "%s"' % (username, password, self.remoteRoot)
         proc = Popen(cmd, stdout=PIPE, shell=True)
 
         (out, err) = proc.communicate()
@@ -904,9 +951,9 @@ class MegaManager(object):
                     # remote_filePath = ' '.join(line.split()[6:])
                     # remote_type = line.split()[2]
                     # if remote_type == '1':
-                    dir_subPath = sub(remotePath, '', remote_filePath)
-                    local_dir = localPath_adj + '/' + dir_subPath
-                    remote_dir = remotePath + '/' + dir_subPath
+                    dir_subPath = sub(self.remoteRoot, '', remote_filePath)
+                    local_dir = self.localRoot_adj + '/' + dir_subPath
+                    remote_dir = self.remoteRoot + '/' + dir_subPath
                     if path.exists(local_dir):
                         self._upload_local_dir(username, password, local_dir, remote_dir)
 
@@ -945,7 +992,7 @@ class MegaManager(object):
         logFile.close()
 
 
-    def _find_remote_files_that_dont_exist_locally(self, username, password, remotePath=REMOTE_ROOT):
+    def _find_remote_files_that_dont_exist_locally(self, username, password):
         """
         Remove remote files that don't exist locally.
 
@@ -953,8 +1000,8 @@ class MegaManager(object):
         :type username: string
         :param password: Password of account to upload to
         :type password: String
-        :param remotePath: Remote path to iterate through.
-        :type remotePath: String.
+        :param self.remoteRoot: Remote path to iterate through.
+        :type self.remoteRoot: String.
 
         :return:
         :type:
@@ -969,7 +1016,7 @@ class MegaManager(object):
         LOCAL_ROOT_adj = sub('\\\\', '/', self.localRoot)
         chdir('%s' % self.megaToolsPath)
 
-        cmd = 'megals -lnR -u %s -p %s "%s"' % (username, password, remotePath)
+        cmd = 'megals -lnR -u %s -p %s "%s"' % (username, password, self.remoteRoot)
         proc = Popen(cmd, stdout=PIPE, shell=True)
 
         (out, err) = proc.communicate()
@@ -978,7 +1025,7 @@ class MegaManager(object):
             if not line == '':
                 remote_filePath = split(':\d{2} ', line)[1]
                 # remote_filePath = ' '.join(line.split()[6:])
-                file_subPath = sub(remotePath, '', remote_filePath)
+                file_subPath = sub(self.remoteRoot, '', remote_filePath)
                 local_filePath = LOCAL_ROOT_adj + file_subPath
                 higherDirRemoved = False
 
@@ -1030,7 +1077,7 @@ class MegaManager(object):
         logFile.close()
 
 
-    def _find_image_files_to_compress(self, username, password, remotePath=REMOTE_ROOT):
+    def _find_image_files_to_compress(self, username, password):
         """
         Find image files to compress.
 
@@ -1038,8 +1085,8 @@ class MegaManager(object):
         :type username: String.
         :param password: Password of account to find local images for.
         :type password: String.
-        :param remotePath: Remote path to iterate through.
-        :type remotePath: String.
+        :param self.remoteRoot: Remote path to iterate through.
+        :type self.remoteRoot: String.
 
         :return:
         :type:
@@ -1054,7 +1101,7 @@ class MegaManager(object):
         LOCAL_ROOT_adj = sub('\\\\', '/', self.localRoot)
         chdir('%s' % self.megaToolsPath)
 
-        cmd = 'megals -lnR -u %s -p %s "%s"' % (username, password, remotePath)
+        cmd = 'megals -lnR -u %s -p %s "%s"' % (username, password, self.remoteRoot)
         proc = Popen(cmd, stdout=PIPE, shell=True)
 
         (out, err) = proc.communicate()
@@ -1068,7 +1115,7 @@ class MegaManager(object):
                     if fileExt in extensions:
                         remote_filePath = split(':\d{2} ', line)[1]
                         # remote_filePath = ' '.join(line.split()[6:])
-                        file_subPath = sub(remotePath, '', remote_filePath)
+                        file_subPath = sub(self.remoteRoot, '', remote_filePath)
 
                         if file_subPath is not '':
                             local_filePath = LOCAL_ROOT_adj + file_subPath
@@ -1130,7 +1177,7 @@ class MegaManager(object):
         return proc1
 
 
-    def _find_video_files_to_compress(self, username, password, remotePath=REMOTE_ROOT):
+    def _find_video_files_to_compress(self, username, password):
         """
         Find video files to compress.
 
@@ -1138,8 +1185,8 @@ class MegaManager(object):
         :type username: string
         :param password: password of account to find local video files for
         :type password: string
-        :param remotePath: Remote path to mirror locally to iterate through.
-        :type remotePath: String.
+        :param self.remoteRoot: Remote path to mirror locally to iterate through.
+        :type self.remoteRoot: String.
 
         :return:
         :type:
@@ -1154,7 +1201,7 @@ class MegaManager(object):
         LOCAL_ROOT_adj = sub('\\\\', '/', self.localRoot)
         chdir('%s' % self.megaToolsPath)
 
-        cmd = 'megals -lnR -u %s -p %s "%s"' % (username, password, remotePath)
+        cmd = 'megals -lnR -u %s -p %s "%s"' % (username, password, self.remoteRoot)
         proc = Popen(cmd, stdout=PIPE, shell=True)
 
         (out, err) = proc.communicate()
@@ -1168,7 +1215,7 @@ class MegaManager(object):
                     if fileExt in extensions:
                         remote_filePath = split(':\d{2} ', line)[1]
                         # remote_filePath = ' '.join(line.split()[6:])
-                        file_subPath = sub(remotePath, '', remote_filePath)
+                        file_subPath = sub(self.remoteRoot, '', remote_filePath)
 
                         if file_subPath is not '':
                             local_filePath = LOCAL_ROOT_adj + file_subPath
@@ -1215,8 +1262,11 @@ class MegaManager(object):
         CREATE_NO_WINDOW = 0x08000000
         chdir(WORKING_DIR)
         newFilePath = filePath.rsplit( ".", 1 )[ 0 ] + '_NEW.mp4'
+
         if path.exists(newFilePath):
             remove(newFilePath)
+
+
 
         cmd = '"%s\\libs\\compressVideos\\ffmpeg.exe" -i "%s" -vf "scale=\'if(gte(iw,720), 720, iw)\':-2" -preset medium -threads 1 "%s"' % (WORKING_DIR, filePath, newFilePath)
 
@@ -1277,7 +1327,7 @@ class MegaManager(object):
                 for account in foundUserPass:
                     logger.debug(' Creating thread to gather details on account %s.' % account)
 
-                    t_megaFile = Thread(target=self._get_account_details, args=(account['user'], account['pass'], self.remoteRoot),
+                    t_megaFile = Thread(target=self._get_account_details, args=(account['user'], account['pass']),
                                                   name='thread_megaFile_%s' % account['user'])
                     t_megaFile.start()
                     self.threads.append(t_megaFile)
@@ -1286,9 +1336,6 @@ class MegaManager(object):
 
                 # self._wait_for_threads_to_finish(threads, timeout=500, sleep=1)
 
-                for accountDetails in sorted(self.accounts_details_dict):
-                    for line in self.accounts_details_dict[accountDetails]:
-                        outs.write(line)
 
 
 
@@ -1297,6 +1344,22 @@ class MegaManager(object):
         except (Exception, KeyboardInterrupt)as e:
             logger.debug(' Exception: %s' % e)
             copyfile(self.megaAccountsData + '.old', self.megaAccountsData)
+
+    def _dump_accounts_details_dict(self):
+        """
+        Dump self.accounts_details_dict to file.
+        
+        :return: 
+        """
+
+        logger = getLogger('MegaManager._dump_accounts_details_dict')
+        logger.setLevel(self.logLevel)
+
+        with open(self.megaAccountsData, "w") as outs:
+            for accountDetails in sorted(self.accounts_details_dict):
+                for line in self.accounts_details_dict[accountDetails]:
+                    outs.write(line)
+        outs.close()
 
 
     def _get_sleep_time(self):
@@ -1315,7 +1378,7 @@ class MegaManager(object):
         return sleepTime
 
 
-    def _get_account_details(self, username, password, remotePath=REMOTE_ROOT):
+    def _get_account_details(self, username, password):
         """
         Creats dictionary of account data (remote size, local size, etc...) for self.megaAccountsData file.
 
@@ -1323,8 +1386,8 @@ class MegaManager(object):
         :type username: String
         :param password: Passworde of account to get data for 
         :type password: String
-        :param remotePath: Remote path of account to get data for.
-        :type remotePath: String
+        :param self.remoteRoot: Remote path of account to get data for.
+        :type self.remoteRoot: String
 
         :return:
         :type:
@@ -1359,8 +1422,8 @@ class MegaManager(object):
             out = sub('\r', '', out)
             accountDetails.append('REMOTE SIZE: ' + out)
 
-        remotePath = remotePath + '/'
-        cmd = 'start /B megals -n -u %s -p %s "%s"' % (username, password, remotePath)
+        remote_root = self.remoteRoot + '/'
+        cmd = 'start /B megals -n -u %s -p %s "%s"' % (username, password, self.remoteRoot)
         proc = Popen(cmd, stdout=PIPE, shell=True)
         (out, err) = proc.communicate()
 
@@ -1374,7 +1437,7 @@ class MegaManager(object):
             for line in lines:
                 localDirSize = 0
                 localDirPath = self.localRoot + '\\' + line
-                remoteDirSize, remotePath = self._get_remote_dir_size(username, password, localDirPath)
+                remoteDirSize, remoteDirPath = self._get_remote_dir_size(username, password, localDirPath)
 
                 if path.exists(localDirPath) and not line == '':
                     # localDirSize = path.getsize(localDirPath)
@@ -1500,6 +1563,9 @@ def getArgs():
 
     parser.add_argument('--removeRemote', dest='removeRemote', action='store_true', default=False,
                         help='If true, this will allow for remote files to be removed.')
+
+    parser.add_argument('--removeIncomplete', dest='removeIncomplete', action='store_true', default=False,
+                        help='If true, this will allow for local downloaded files that are incomplete to be removed.')
 
     parser.add_argument('--compress', dest='compress', action='store_true', default=False,
                         help='If true, this will compress local image and video files.')
