@@ -1433,7 +1433,7 @@ class MegaManager(object):
         logger = getLogger('MegaManager._get_sleep_time')
         logger.setLevel(self.logLevel)
 
-        sleepTime = 5
+        sleepTime = 0
 
         return sleepTime
 
