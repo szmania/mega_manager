@@ -1177,34 +1177,37 @@ class MegaManager(object):
                         if file_subPath is not '':
                             local_filePath = LOCAL_ROOT_adj + file_subPath
 
-                            if (path.exists(local_filePath)) and (local_filePath not in self.compressedImageFiles) and (local_filePath not in self.unableToCompressImageFiles):
-                                # timeout = 2
-                                returnCode = self._compress_image_file(local_filePath)
-                                if returnCode == 0:
-                                    # startTime = time.time()
-                                    compressPath_backup = local_filePath + '.compressimages-backup'
-                                    # while time.time() - startTime < timeout:
-                                    if path.exists(compressPath_backup):
-                                        logger.debug(' File compressed successfully "%s"!' % local_filePath)
-                                        remove(compressPath_backup)
+                            if (path.exists(local_filePath)):
+                                if (local_filePath not in self.compressedImageFiles) and (local_filePath not in self.unableToCompressImageFiles):
+                                    # timeout = 2
+                                    returnCode = self._compress_image_file(local_filePath)
+                                    if returnCode == 0:
+                                        # startTime = time.time()
+                                        compressPath_backup = local_filePath + '.compressimages-backup'
+                                        # while time.time() - startTime < timeout:
+                                        if path.exists(compressPath_backup):
+                                            logger.debug(' File compressed successfully "%s"!' % local_filePath)
+                                            remove(compressPath_backup)
 
-                                        self.compressedFiles = []
-                                        self.compressedFiles.append(local_filePath)
-                                        self._dump_compressed_image_file_list()
+                                            self.compressedFiles = []
+                                            self.compressedFiles.append(local_filePath)
+                                            self._dump_compressed_image_file_list()
+
+                                        else:
+                                            logger.debug(' File cannot be compressed any further "%s"!' % local_filePath)
+                                            self.unableToCompressImageFiles.append(local_filePath)
+                                            self._dump_unable_to_compress_image_file_list()
+
+                                            # self._compress_image_file_delete_backup(local_filePath)
+                                            # self._remove_remote_file(username, password, remote_filePath)
 
                                     else:
-                                        logger.debug(' File cannot be compressed any further "%s"!' % local_filePath)
-                                        self.unableToCompressImageFiles.append(local_filePath)
-                                        self._dump_unable_to_compress_image_file_list()
-
-                                        # self._compress_image_file_delete_backup(local_filePath)
-                                        # self._remove_remote_file(username, password, remote_filePath)
+                                        logger.debug(' Error, image file could not be compressed "%s"!' % local_filePath)
 
                                 else:
-                                    logger.debug(' Error, image file could not be compressed "%s"!' % local_filePath)
-
+                                    logger.debug(' Error, image file previously processed. Moving on.  "%s"!' % local_filePath)
                             else:
-                                logger.debug(' Error, image file previously processed. Moving on.  "%s"!' % local_filePath)
+                                logger.debug(' Error, image file does NOT exist locally. Moving on.  "%s"!' % local_filePath)
 
             sleep(self._get_sleep_time())
 
@@ -1430,7 +1433,7 @@ class MegaManager(object):
         logger = getLogger('MegaManager._get_sleep_time')
         logger.setLevel(self.logLevel)
 
-        sleepTime = 0
+        sleepTime = 5
 
         return sleepTime
 
@@ -1538,19 +1541,13 @@ class MegaManager(object):
         try:
             if self.removeRemote:
                 self._dump_removed_remote_files()
-            if self.compressedImageFiles:
+            if self.compressImages:
                 self._dump_compressed_image_file_list()
-
-            if self.compressedVideoFiles:
-                self._dump_compressed_video_fle_list()
-
-
-            if self.unableToCompressImageFiles:
                 self._dump_unable_to_compress_image_file_list()
-
-
-            if self.unableToCompressVideoFiles:
+            if self.compressVideos:
+                self._dump_compressed_video_fle_list()
                 self._dump_unable_to_compress_video_file_list()
+
         except Exception as e:
             logger.debug(' Exception: %s' % str(e))
             pass
