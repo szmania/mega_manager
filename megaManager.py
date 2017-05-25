@@ -15,7 +15,7 @@ from logging import DEBUG, getLogger, FileHandler, Formatter, StreamHandler
 from os import chdir, getpid, listdir, path, remove, rename, walk
 from psutil import IDLE_PRIORITY_CLASS, Process
 from random import randint
-from re import findall, split, sub
+from re import findall, search, split, sub
 from shutil import copyfile, rmtree
 from subprocess import call, PIPE, Popen
 from sys import stdout
@@ -35,6 +35,9 @@ MEGA_ACCOUNTS = ''
 LOCAL_ROOT = ''
 REMOTE_ROOT = ''
 
+IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png']
+VIDEO_EXTENSIONS = ['.avi', '.mp4', '.wmv']
+
 WORKING_DIR = path.dirname(path.realpath(__file__))
 
 TEMP_LOGFILE_PATH = gettempdir() + '\\megaManager_error_files_%d.tmp' % randint(0, 9999999999)
@@ -43,7 +46,7 @@ COMPRESSED_IMAGES_FILE =  WORKING_DIR + "\\compressed_images.tmp"
 UNABLE_TO_COMPRESS_IMAGES_FILE =  WORKING_DIR + "\\unable_to_compress_images.tmp"
 COMPRESSED_VIDEOS_FILE =  WORKING_DIR + "\\compressed_videos.tmp"
 UNABLE_TO_COMPRESS_VIDEOS_FILE = WORKING_DIR + "\\unable_to_compress_videos.tmp"
-
+REMOVED_REMOTE_FILES = WORKING_DIR + '\\removed_remote_files.tmp'
 
 LOGFILE_STDOUT = path.dirname(path.realpath(__file__)) + '\mega_stdout.log'
 LOGFILE_STDERR = path.dirname(path.realpath(__file__)) + '\mega_stderr.log'
@@ -152,43 +155,63 @@ class MegaManager(object):
                         self.localRoot = value
                     elif line.startswith('REMOTE_ROOT'):
                         self.remoteRoot = value
-
-
-    def _load_compressed_lists(self):
+    def _load_removed_remote_files_lists(self):
         """
-        Load compressed and uncompressed file lists from *.tmp.
+        Load removed remote files lists from *.tmp.
         """
 
-        logger = getLogger('MegaManager._load_compressed_lists')
+        logger = getLogger('MegaManager._load_removed_remote_files_lists')
+        logger.setLevel(self.logLevel)
+
+        logger.debug(' Loading %s file.' % REMOVED_REMOTE_FILES)
+        self.removed_remote_files = []
+
+        if path.exists(REMOVED_REMOTE_FILES):
+            with open(REMOVED_REMOTE_FILES, "r") as ins:
+                self.removed_remote_files = [line.rstrip('\n') for line in ins]
+
+    def _load_compressed_image_lists(self):
+        """
+        Load compressed and uncompressed image file lists from *.tmp.
+        """
+
+        logger = getLogger('MegaManager._load_compressed_image_lists')
         logger.setLevel(self.logLevel)
 
         logger.debug(' Loading %s file.' % COMPRESSED_IMAGES_FILE)
         self.compressedImageFiles = []
 
-        if path.exists('%s\\%s' % (WORKING_DIR, COMPRESSED_IMAGES_FILE)):
-            with open('%s\\%s' % (WORKING_DIR, COMPRESSED_IMAGES_FILE), "r") as ins:
+        if path.exists(COMPRESSED_IMAGES_FILE):
+            with open(COMPRESSED_IMAGES_FILE, "r") as ins:
                 self.compressedImageFiles = [line.rstrip('\n') for line in ins]
 
         logger.debug(' Loading %s file.' % UNABLE_TO_COMPRESS_IMAGES_FILE)
         self.unableToCompressImageFiles = []
 
-        if path.exists('%s\\%s' % (WORKING_DIR, UNABLE_TO_COMPRESS_IMAGES_FILE)):
-            with open('%s\\%s' % (WORKING_DIR, UNABLE_TO_COMPRESS_IMAGES_FILE), "r") as ins:
+        if path.exists(UNABLE_TO_COMPRESS_IMAGES_FILE):
+            with open(UNABLE_TO_COMPRESS_IMAGES_FILE, "r") as ins:
                 self.unableToCompressImageFiles = [line.rstrip('\n') for line in ins]
 
+    def _load_compressed_video_lists(self):
+        """
+        Load compressed and uncompressed video file lists from *.tmp.
+        """
+
+        logger = getLogger('MegaManager._load_compressed_video_lists')
+        logger.setLevel(self.logLevel)
 
         logger.debug(' Loading %s file.' % COMPRESSED_VIDEOS_FILE)
         self.compressedVideoFiles = []
 
-        if path.exists('%s\\%s' % (WORKING_DIR, COMPRESSED_VIDEOS_FILE)):
-            with open('%s\\%s' % (WORKING_DIR, COMPRESSED_VIDEOS_FILE), "r") as ins:
+        if path.exists(COMPRESSED_VIDEOS_FILE):
+            with open(COMPRESSED_VIDEOS_FILE, "r") as ins:
                 self.compressedVideoFiles = [line.rstrip('\n') for line in ins]
 
         logger.debug(' Loading %s file.' % UNABLE_TO_COMPRESS_IMAGES_FILE)
         self.unableToCompressVideoFiles = []
 
-        if path.exists('%s\\%s' % (WORKING_DIR, UNABLE_TO_COMPRESS_VIDEOS_FILE)):
-            with open('%s\\%s' % (WORKING_DIR, UNABLE_TO_COMPRESS_VIDEOS_FILE), "r") as ins:
+        if path.exists(UNABLE_TO_COMPRESS_VIDEOS_FILE):
+            with open(UNABLE_TO_COMPRESS_VIDEOS_FILE, "r") as ins:
                 self.unableToCompressVideoFiles = [line.rstrip('\n') for line in ins]
 
 
@@ -255,6 +278,21 @@ class MegaManager(object):
         for unCompressedFilePath in self.unableToCompressImageFiles:
             unCompressedList_file.write("%s\n" % unCompressedFilePath)
 
+    def _dump_removed_remote_files(self):
+        """
+        Dump removed remote file list to *.tmp file.
+        """
+
+        logger = getLogger('MegaManager._dump_removed_remote_files')
+        logger.setLevel(self.logLevel)
+
+        logger.debug(' Dumping self.removed_remote_files to %s file.' % REMOVED_REMOTE_FILES)
+
+        removedRemoteFiles_file = open('%s' % (REMOVED_REMOTE_FILES), 'w')
+
+        for removedFilePath in self.removed_remote_files:
+            removedRemoteFiles_file.write("%s\n" % removedFilePath)
+
     def run(self):
         """
         Run MegaManager tasks.
@@ -267,8 +305,9 @@ class MegaManager(object):
 
         try:
             self._create_thread_create_mega_accounts_data_file()
-
-            self._create_threads_local_unfinished_file_remover()
+            sleep(1)
+            if self.removeIncomplete:
+                self._create_threads_local_unfinished_file_remover()
 
             if self.download:
                 self._create_threads_download()
@@ -374,7 +413,9 @@ class MegaManager(object):
 
         logger = getLogger('MegaManager._create_threads_remote_file_removal')
         logger.setLevel(self.logLevel)
-        
+
+        self._load_removed_remote_files_lists()
+
         logger.debug(' Creating thread to remove files remotely.')
 
         t_remover = Thread(target=self._all_accounts_remote_file_removal, args=( ), name='thread_remoteFileRemover')
@@ -391,7 +432,7 @@ class MegaManager(object):
         logger.setLevel(self.logLevel)
         
         logger.debug(' Creating thread to compress local image files.')
-        self._load_compressed_lists()
+        self._load_compressed_image_lists()
 
         t_compress = Thread(target=self._all_accounts_image_compression, args=( ), name='thread_compressImages')
         self.threads.append(t_compress)
@@ -406,7 +447,7 @@ class MegaManager(object):
         logger.setLevel(self.logLevel)
         
         logger.debug(' Creating thread to compress local video files.')
-        self._load_compressed_lists()
+        self._load_compressed_video_lists()
 
         t_compress = Thread(target=self._all_accounts_video_compression, args=( ), name='thread_compressVideos')
         self.threads.append(t_compress)
@@ -813,6 +854,7 @@ class MegaManager(object):
 
         startTime = time()
         megaFileFinished = False
+
         while len(self.threads) > 0:
             megaFileThreads_found = False
 
@@ -823,9 +865,9 @@ class MegaManager(object):
                         self.threads.remove(thread)
                         logger.info(' Thread "%s" finished!' % thread.name)
                         logger.debug(' Threads left: %d' % len(self.threads))
-
-                    if 'megaFile' in thread.name:
-                        megaFileThreads_found = True
+                    else:
+                        if 'megaFile' in thread.name:
+                            megaFileThreads_found = True
 
                 if not megaFileThreads_found and not megaFileFinished:
                     self._dump_accounts_details_dict()
@@ -944,6 +986,7 @@ class MegaManager(object):
 
         (out, err) = proc.communicate()
         lines = out.split('\r\n')
+
         for line in lines:
             if not line == '':
                 if len(split(':\d{2} ', line)) > 1:
@@ -954,6 +997,7 @@ class MegaManager(object):
                     dir_subPath = sub(self.remoteRoot, '', remote_filePath)
                     local_dir = self.localRoot_adj + '/' + dir_subPath
                     remote_dir = self.remoteRoot + '/' + dir_subPath
+
                     if path.exists(local_dir):
                         self._upload_local_dir(username, password, local_dir, remote_dir)
 
@@ -1009,40 +1053,53 @@ class MegaManager(object):
 
         logger = getLogger('MegaManager._find_remote_files_that_dont_exist_locally')
         logger.setLevel(self.logLevel)
-        logger.debug(' Removing remote files that do not exist locally on %s - %s.' % (username, password))
 
-        dirs_removed = []
+        logger.debug(' Removing remote files that do not exist locally on %s - %s.' % (username, password))
 
         LOCAL_ROOT_adj = sub('\\\\', '/', self.localRoot)
         chdir('%s' % self.megaToolsPath)
 
         cmd = 'megals -lnR -u %s -p %s "%s"' % (username, password, self.remoteRoot)
+        cmd = 'megals -R -u %s -p %s "%s"' % (username, password, self.remoteRoot)
+
         proc = Popen(cmd, stdout=PIPE, shell=True)
 
         (out, err) = proc.communicate()
         lines = out.split('\r\n')
+
+
         for line in lines:
-            if not line == '':
-                remote_filePath = split(':\d{2} ', line)[1]
+            if not line == '' and len(findall("\?", line)) == 0:
+
+                # remote_filePath = split(':\d{2} ', line)[1]
+                remote_filePath = line
+
                 # remote_filePath = ' '.join(line.split()[6:])
                 file_subPath = sub(self.remoteRoot, '', remote_filePath)
                 local_filePath = LOCAL_ROOT_adj + file_subPath
-                higherDirRemoved = False
 
-                for removed_dir in dirs_removed:
-                    if removed_dir in remote_filePath:
-                        higherDirRemoved = True
-                        break
 
-                if not path.exists(local_filePath):
-                    remote_type = line.split()[2]
+                fileName, fileExt = path.splitext(remote_filePath)
+
+                if not path.exists(local_filePath) and remote_filePath not in self.removed_remote_files and fileExt in IMAGE_EXTENSIONS:
+                    higherDirRemoved = False
+
+                    for removed_file in self.removed_remote_files:
+                        if removed_file in remote_filePath:
+                            higherDirRemoved = True
+                            break
+
+                    # remote_type = line.split()[2]
 
                     if not higherDirRemoved:
-                        if remote_type == '0':
-                            self._remove_remote_file(username, password, remote_filePath)
-                        elif remote_type == '1':
-                            dirs_removed.append(remote_filePath)
-                            self._remove_remote_file(username, password, remote_filePath)
+                        # if remote_type == '0':
+                        self.removed_remote_files.append(remote_filePath)
+                        self._remove_remote_file(username, password, remote_filePath)
+                        # elif remote_type == '1':
+                        #     self.removed_remote_files.append(remote_filePath)
+                        #     self._remove_remote_file(username, password, remote_filePath)
+
+                        self._dump_removed_remote_files()
 
 
     def _remove_remote_file(self, username, password, remoteFilePath):
@@ -1059,6 +1116,7 @@ class MegaManager(object):
         :return:
         :type:
         """
+        return
 
         logger = getLogger('MegaManager._remove_remote_file')
         logger.setLevel(self.logLevel)
@@ -1096,7 +1154,6 @@ class MegaManager(object):
         logger.setLevel(self.logLevel)
 
         logger.debug(' Compressing image files.')
-        extensions = ['.jpg', '.jpeg', '.png']
 
         LOCAL_ROOT_adj = sub('\\\\', '/', self.localRoot)
         chdir('%s' % self.megaToolsPath)
@@ -1112,7 +1169,7 @@ class MegaManager(object):
                 remote_type = line.split()[2]
                 if remote_type == '0':
                     fileName, fileExt = path.splitext(split(':\d{2} ', line)[1])
-                    if fileExt in extensions:
+                    if fileExt in IMAGE_EXTENSIONS:
                         remote_filePath = split(':\d{2} ', line)[1]
                         # remote_filePath = ' '.join(line.split()[6:])
                         file_subPath = sub(self.remoteRoot, '', remote_filePath)
@@ -1131,7 +1188,7 @@ class MegaManager(object):
                                         logger.debug(' File compressed successfully "%s"!' % local_filePath)
                                         remove(compressPath_backup)
 
-                                        self.compressedFiles = None
+                                        self.compressedFiles = []
                                         self.compressedFiles.append(local_filePath)
                                         self._dump_compressed_image_file_list()
 
@@ -1196,7 +1253,6 @@ class MegaManager(object):
         logger.setLevel(self.logLevel)
         
         logger.debug(' Finding video files to compress.')
-        extensions = ['.avi', '.mp4', '.wmv']
 
         LOCAL_ROOT_adj = sub('\\\\', '/', self.localRoot)
         chdir('%s' % self.megaToolsPath)
@@ -1206,13 +1262,14 @@ class MegaManager(object):
 
         (out, err) = proc.communicate()
         lines = out.split('\r\n')
+
         for line in lines:
             if not line == '':
                 # test = split(':\d{2} ', line)
                 remote_type = line.split()[2]
                 if remote_type == '0':
                     fileName, fileExt = path.splitext(split(':\d{2} ', line)[1])
-                    if fileExt in extensions:
+                    if fileExt in VIDEO_EXTENSIONS:
                         remote_filePath = split(':\d{2} ', line)[1]
                         # remote_filePath = ' '.join(line.split()[6:])
                         file_subPath = sub(self.remoteRoot, '', remote_filePath)
@@ -1479,6 +1536,8 @@ class MegaManager(object):
         
         logger.info(' Tearing down megaManager!')
         try:
+            if self.removeRemote:
+                self._dump_removed_remote_files()
             if self.compressedImageFiles:
                 self._dump_compressed_image_file_list()
 
