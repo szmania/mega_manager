@@ -1,5 +1,4 @@
 __all__ = ["pyxenforo"]
 
-
-from .CompressImages import compressimages
-# from .exceptions import TokenError, ResolverError, LoginError
+from megaManager_lib import MegaManager_Lib
+from megaTools_lib import MegaTools_Lib
