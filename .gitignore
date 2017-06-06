@@ -93,3 +93,5 @@ ENV/
 *.log
 *.cfg
 .idea/
+*.ini
+./tools/megaTools_1_1_98
