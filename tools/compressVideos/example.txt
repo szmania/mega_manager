@@ -1,0 +1,1 @@
+$ ./ffmpeg -i test.wmv -vf "scale='if(gte(iw, 720), 720, iw)':-2" -threads 1 -preset ultrafast output3.mp4
