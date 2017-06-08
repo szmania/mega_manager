@@ -630,7 +630,8 @@ class MegaManager(object):
                                             logger.debug(' File compressed successfully "%s"!' % local_filePath)
                                             try:
                                                 remove(compressPath_backup)
-                                            except WindowsError:
+                                            except WindowsError as e:
+                                                logger.warning(' Exception: %s' % str(e))
                                                 pass
 
                                             self.compressedFiles = []
