@@ -94,7 +94,7 @@ ENV/
 *.cfg
 .idea/
 *.ini
-./tools/megaTools_1_1_98
-./tools/ffmpeg
 ./data
 *.nzp
+./tools/megaTools_1_1_98
+./tools/ffmpeg
