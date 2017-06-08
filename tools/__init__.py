@@ -1,1 +1,1 @@
-from .compressImages import compressimages
+from .compressImages import CompressImage

@@ -95,3 +95,4 @@ ENV/
 .idea/
 *.ini
 ./tools/megaTools_1_1_98
+./data
