@@ -190,6 +190,66 @@ class MegaTools_Lib(object):
 
         return out, err
 
+    def get_account_free_space(self, username, password):
+        """
+        Get account free space in gigabytes
+
+        :param username: username for MEGA account
+        :type username: string
+        :param password: password for MEGA account
+        :type password: string
+
+        :return tuple: Remote directory size and remote directory path
+        """
+
+        logger = getLogger('MegaTools_Lib.get_account_used_space')
+        logger.setLevel(self.logLevel)
+
+        chdir('%s' % self.megaToolsDir)
+
+        cmd = 'start /B megadf --free -h --gb -u %s -p %s' % (username, password)
+        proc = Popen(cmd, stdout=PIPE, shell=True)
+        (out, err) = proc.communicate()
+
+        if err:
+            logger.info(str(err))
+
+        if not out == '':
+            usedSpace = sub('\r', '', out)
+            return usedSpace
+
+        return 0
+
+    def get_account_used_space(self, username, password):
+        """
+        Get account used space in gigabytes
+
+        :param username: username for MEGA account
+        :type username: string
+        :param password: password for MEGA account
+        :type password: string
+
+        :return tuple: Remote directory size and remote directory path
+        """
+
+        logger = getLogger('MegaTools_Lib.get_account_used_space')
+        logger.setLevel(self.logLevel)
+
+        chdir('%s' % self.megaToolsDir)
+
+        cmd = 'start /B megadf --used -h --gb -u %s -p %s' % (username, password)
+        proc = Popen(cmd, stdout=PIPE, shell=True)
+        (out, err) = proc.communicate()
+
+        if err:
+            logger.info(str(err))
+
+        if not out == '':
+            usedSpace = sub('\r', '', out)
+            return usedSpace
+
+        return 0
+
     def get_remote_dir_size(self, username, password, localDirPath, localRoot, remoteRoot):
         """
         Get remote directory sizes of equivalent local file path
@@ -247,7 +307,6 @@ class MegaTools_Lib(object):
         :type remoteRoot: String.
 
         :return: returns list of directories
-        :type: list of strings
         """
 
         logger = getLogger('MegaTools_Lib.get_remote_dirs')
@@ -355,6 +414,37 @@ class MegaTools_Lib(object):
                 return remoteFileSize, remoteRoot + subPath
 
         return 0, ''
+
+    def get_remote_subdir_names_only(self, username, password, remotePath):
+        """
+        Get remote sub directory names only.
+        Only the subdirectories immediately under remotePath are gotten.
+
+        :param username: username of account to get remote directories from
+        :type username: string
+        :param password: password of account to get remote directories from
+        :type password: string
+        :param remotePath: Remote root path of remote accounts to map with local root.
+        :type remotePath: String.
+
+        :return: List of sub directory names.
+        """
+
+        logger = getLogger('MegaTools_Lib.get_remote_subdir_names_only')
+        logger.setLevel(self.logLevel)
+
+        remote_root = remotePath + '/'
+        cmd = 'start /B megals -n -u %s -p %s "%s"' % (username, password, remote_root)
+        proc = Popen(cmd, stdout=PIPE, shell=True)
+        (out, err) = proc.communicate()
+
+        if err:
+            logger.info(str(err))
+        else:
+            if not out == '':
+                lines = out.split('\r\n')
+                return lines
+        return []
 
     def remove_local_incomplete_files(self, username, password, localRoot, remoteRoot):
         """

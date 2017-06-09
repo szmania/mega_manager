@@ -834,59 +834,37 @@ class MegaManager(object):
         accountDetails.append(username + ' - ' + password + '\n')
         chdir('%s' % self.megaToolsDir)
 
-        cmd = 'start /B megadf --free -h -u %s -p %s' % (username, password)
-        proc = Popen(cmd, stdout=PIPE, shell=True)
-        (out, err) = proc.communicate()
+        freeSpace = self.megaTools.get_account_free_space(username=username, password=password)
+        accountDetails.append('FREE SIZE: ' + freeSpace)
 
-        if err:
-            logger.info(str(err))
+        usedSpace = self.megaTools.get_account_used_space(username=username, password=password)
+        accountDetails.append('REMOTE SIZE: ' + usedSpace)
 
-        if not out == '':
-            out = sub('\r', '', out)
-            accountDetails.append('FREE SPACE: ' + out)
-
-        cmd = 'start /B megadf --used -h -u %s -p %s' % (username, password)
-        proc = Popen(cmd, stdout=PIPE, shell=True)
-        (out, err) = proc.communicate()
-
-        if err:
-            logger.info(str(err))
-
-        if not out == '':
-            out = sub('\r', '', out)
-            accountDetails.append('REMOTE SIZE: ' + out)
-
-        remote_root = self.remoteRoot + '/'
-        cmd = 'start /B megals -n -u %s -p %s "%s"' % (username, password, self.remoteRoot)
-        proc = Popen(cmd, stdout=PIPE, shell=True)
-        (out, err) = proc.communicate()
+        subDirs = self.megaTools.get_remote_subdir_names_only(username=username, password=password, remotePath=self.remoteRoot)
 
         directoryLines = []
         totalLocalSize = 0
-        if err:
-            logger.info(str(err))
 
-        if not out == '':
-            lines = out.split('\r\n')
-            for line in lines:
-                localDirSize = 0
-                localDirPath = self.localRoot + '\\' + line
-                remoteDirSize, remoteDirPath = self.megaTools.get_remote_dir_size(username, password, localDirPath, localRoot=self.localRoot, remoteRoot=self.remoteRoot)
 
-                if path.exists(localDirPath) and not line == '':
-                    # localDirSize = path.getsize(localDirPath)
-                    for r, d, f in walk(localDirPath):
-                        for file in f:
-                            filePath = path.join(r, file)
-                            if path.exists(filePath):
-                                localDirSize = localDirSize + path.getsize(filePath)
+        for line in subDirs:
+            localDirSize = 0
+            localDirPath = self.localRoot + '\\' + line
+            remoteDirSize, remoteDirPath = self.megaTools.get_remote_dir_size(username, password, localDirPath, localRoot=self.localRoot, remoteRoot=self.remoteRoot)
 
-                    totalLocalSize = totalLocalSize + localDirSize
-                    directoryLines.append(line + ' (%s remote, %s local)\n' % (self.lib.get_mb_size_from_bytes(int(remoteDirSize)), self.lib.get_mb_size_from_bytes(int(localDirSize))))
+            if path.exists(localDirPath) and not line == '':
+                # localDirSize = path.getsize(localDirPath)
+                for r, d, f in walk(localDirPath):
+                    for file in f:
+                        filePath = path.join(r, file)
+                        if path.exists(filePath):
+                            localDirSize = localDirSize + path.getsize(filePath)
 
-                elif not line == '':
-                    directoryLines.append(line + ' (%s remote, NONE local)\n' % (self.lib.get_mb_size_from_bytes(int(remoteDirSize))))
-                    # accountDetails.append('LOCAL SIZE: NONE \n')
+                totalLocalSize = totalLocalSize + localDirSize
+                directoryLines.append(line + ' (%s remote, %s local)\n' % (self.lib.get_mb_size_from_bytes(int(remoteDirSize)), self.lib.get_mb_size_from_bytes(int(localDirSize))))
+
+            elif not line == '':
+                directoryLines.append(line + ' (%s remote, NONE local)\n' % (self.lib.get_mb_size_from_bytes(int(remoteDirSize))))
+                # accountDetails.append('LOCAL SIZE: NONE \n')
 
 
         accountDetails.append('LOCAL SIZE: %s \n' % self.lib.get_mb_size_from_bytes(totalLocalSize))
@@ -905,7 +883,6 @@ class MegaManager(object):
         Tearing down of MEGA Manager.
 
         :return:
-        :type:
         """
         
         logger = getLogger('MegaManager._tear_down')
