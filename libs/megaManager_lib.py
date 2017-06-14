@@ -4,36 +4,38 @@
 # Initial Creation.
 ###
 
-from logging import DEBUG, getLogger, FileHandler, Formatter, StreamHandler
-from os import chdir, getpid, kill, listdir, path, remove, rename, walk
-from re import findall, split, sub
+from logging import getLogger
+from numpy import array, load, savez_compressed
+from os import chdir, kill, listdir, path
 from signal import SIGTERM
 from subprocess import call, PIPE, Popen
+from tools import CompressImage
 
 __author__ = 'szmania'
 
-WORKING_DIR = path.realpath(__file__)
+SCRIPT_DIR = path.dirname(path.realpath(__file__))
+
 
 class MegaManager_Lib(object):
-    def __init__(self, logLevel):
+    def __init__(self, workingDir, logLevel='DEBUG'):
         """
+        :param workingDir: Working directory of megaManager script
+        :type workingDir: String.
         :param logLevel: Logging level setting ie: "DEBUG" or "WARN"
         :type logLevel: String.
         """
 
+        self.workingDir = workingDir
         self.logLevel = logLevel
-    
-    
+
     def compress_image_file(self, filePath):
         """
         Compress images file.
     
         :param filePath: File path of image to compress.
         :type filePath: string
-        :param self.logLevel: Logging level setting ie: "DEBUG" or "WARN"
-        :type self.logLevel: String.
-    
-        :return: subprocess object
+
+        :return: Boolean of whether compression operation was successful or not.
         """
     
         logger = getLogger('megaManager_lib._compress_image_file')
@@ -41,60 +43,52 @@ class MegaManager_Lib(object):
     
         logger.debug(' Compressing image file "%s".' % filePath)
     
-        cmd = 'D:\\Python\\Python27\\python.exe "%s\\libs\\compressImages\\compressImages.py" --mode compress "%s"' % (
-        WORKING_DIR, filePath)
-        proc1 = self.exec_cmd(command=cmd, noWindow=True)
-    
-        return proc1
-    
-    def compress_video_file(self, filePath, targetPath):
-        """
-        Compress video file.
-    
-        :param filePath: File path of video to compress.
-        :type filePath: string
-        :param targetPath: File path of video to be compressed into.
-        :type targetPath: string
-        :param self.logLevel: Logging level setting ie: "DEBUG" or "WARN"
-        :type self.logLevel: String.
-    
-        :return: subprocess object
-        """
-    
-        logger = getLogger('lib.compress_video_file')
-        logger.setLevel(self.logLevel)
-    
-        logger.debug(' Compressing video file: "%s"' % filePath)
-    
-        cmd = '"%s\\libs\\compressVideos\\ffmpeg.exe" -i "%s" -vf "scale=\'if(gte(iw,720), 720, iw)\':-2" -preset medium -threads 1 "%s"' % (WORKING_DIR, filePath, targetPath)
-    
-        proc1 = self.exec_cmd(command=cmd, noWindow=True)
-    
-        return proc1
-    
-    def dump_list_into_file(self, itemList, file):
+        # cmd = 'D:\\Python\\Python27\\python.exe "%s\\libs\\compressImages\\compressImages.py" --mode compress "%s"' % (
+        #     self.workingDir, filePath)
+        # cmd = 'python "%s\\libs\\compressImages\\compressImages.py" --mode compress "%s"' % (
+        #     self.workingDir, filePath)
+        # proc1 = self.exec_cmd(command=cmd, noWindow=True)
+        #
+        # return proc1
+
+        compressImageObj = CompressImage()
+        result = compressImageObj.processfile(filename=filePath)
+
+        if result:
+            logger.debug(' Success, file "%s" compressed successfully.' % filePath)
+            return True
+        else:
+            logger.debug(' Error, file "%s" NOT compressed successfully!' % filePath)
+            return False
+
+
+    def dump_list_into_file(self, itemList, filePath):
         """
         Dump list into file for each item on a new line.
     
         :param itemList: List to dump into file.
         :type itemList: list
-        :param file: File to dump to.
-        :type file: string
-        :param self.logLevel: Logging level setting ie: "DEBUG" or "WARN"
-        :type self.logLevel: String.
+        :param filePath: File to dump to.
+        :type filePath: string
     
         :return: boolean of whether successful or not
         """
     
-        logger = getLogger('megaManager_lib.dump_list_into_file')
+        logger = getLogger('MegaManager_lib.dump_list_into_file')
         logger.setLevel(self.logLevel)
     
-        logger.debug(' Dumping list into %s file.' % file)
-    
-        fileObj = open('%s' % (file), 'w')
-    
-        for item in itemList:
-            fileObj.write("%s\n" % item)
+        logger.debug(' Dumping list into %s filePath.' % filePath)
+
+        try:
+            npList = array(itemList)
+            savez_compressed(filePath, list=npList)
+        except Exception as e:
+            logger.debug(' Exception: %s' % str(e))
+
+        # fileObj = open('%s' % (filePath), 'w')
+        #
+        # for item in itemList:
+        #     fileObj.write("%s\n" % item)
     
     def exec_cmd(self, command, workingDir=None, noWindow=False):
         """
@@ -110,7 +104,7 @@ class MegaManager_Lib(object):
         :return: subprocess object
         """
     
-        logger = getLogger('lib._exec_cmd')
+        logger = getLogger('MegaManager_Lib.exec_cmd')
         logger.setLevel(self.logLevel)
     
         logger.debug(' Executing command: "%s"' % command)
@@ -132,8 +126,6 @@ class MegaManager_Lib(object):
     
         :param bytes: Size in bytes.
         :type bytes: Integer.
-        :param self.logLevel: Logging level setting ie: "DEBUG" or "WARN"
-        :type self.logLevel: String.
     
         :return: Size in MegaBytes from bytes.
         """
@@ -161,11 +153,7 @@ class MegaManager_Lib(object):
             """
             Get time in seconds to sleep. Function is used to pace program speed during iterations.
     
-            :param self.logLevel: Logging level setting ie: "DEBUG" or "WARN"
-            :type self.logLevel: String.
-    
-            :return: time in seconds to sleep
-            :type: integer or decimal
+            :return: Time in seconds to sleep as integer.
             """
     
             logger = getLogger('megaManager_lib.get_sleep_time')
@@ -174,18 +162,36 @@ class MegaManager_Lib(object):
             sleepTime = 0
     
             return sleepTime
-    
+
+    def get_items_in_list_with_subString(self, list, subString):
+        """
+        Return sub list of list that contain substring.
+
+        :param list: List to find substrings in.
+        :type list: List.
+        :param subString: Substring to find.
+        :type subString: String.
+
+        :return: List of items that contain subString.
+        """
+
+        logger = getLogger('MegaManager_Lib.get_items_in_list_with_subString')
+        logger.setLevel(self.logLevel)
+
+        subList = []
+        for item in list:
+            if subString in item:
+                subList.append(item)
+        return subList
+
     def kill_running_processes_with_name(self, procName):
         """
         Kill processes with name.
     
         :param procName: Process name.
         :type procName: String.
-        :param self.logLevel: Logging level setting ie: "DEBUG" or "WARN"
-        :type self.logLevel: String.
     
         :return:
-        :type:
         """
     
         logger = getLogger('megaManager_lib.kill_running_processes_with_name')
@@ -202,17 +208,47 @@ class MegaManager_Lib(object):
                 kill(pid, SIGTERM)
     
         logger.debug(' Success, all "%s" process have been killed.' % procName)
-    
+
+    def load_file_as_list(self, filePath):
+        """
+        Load file as list splitting each line into a new item.
+
+        :param filePath: File to lead.
+        :type filePath: String.
+
+        :return: Lines in file as list.
+        """
+
+        logger = getLogger('MegaManager_Lib.load_file_list_as_list')
+        logger.setLevel(self.logLevel)
+
+        logger.debug(' Loading %s filePath.' % filePath)
+
+        items = []
+        if path.exists(filePath):
+            try:
+                data = load(file=filePath, allow_pickle=False)
+                items = data.f.list.tolist()
+                # with open(filePath, "r") as ins:
+                #     items = [line.rstrip('\n') for line in ins]
+                # ins.close()
+            except Exception as e:
+                logger.debug(' Exception: %s' % str(e))
+            finally:
+                return items
+
+        else:
+            logger.debug(' Error, filepath "%s" does NOT exist!' % filePath)
+            return items
+
     def size_of_dir(self, dirPath):
         """
         Walks through the directory, getting the cumulative size of the directory
     
         :param dirPath: Directory to walk through to get size.
         :type dirPath: String.
-        :param self.logLevel: Logging level setting ie: "DEBUG" or "WARN"
-        :type self.logLevel: String.
     
-        :return sum: Size in bytes.
+        :return: Size in bytes as integer.
         """
     
         logger = getLogger('megaManager_lib.size_of_dir')
