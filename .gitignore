@@ -105,3 +105,4 @@ $ szmania
 .idea/
 *.log
 *.tmp
+*.npz
