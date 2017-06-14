@@ -116,7 +116,7 @@ class MegaManager(object):
         """
         Assign argumetns to class attributes.
 
-        :param kwargs:  Dictionary of argument.s
+        :param kwargs:  Dictionary of arguments.
         :type kwargs: Dictionary
         
         :return:
@@ -317,6 +317,7 @@ class MegaManager(object):
         
         logger.debug(' Creating thread to compress local image files.')
         # self._load_compressed_image_lists()
+
         self.compressedImageFiles = self.lib.load_file_as_list(filePath=COMPRESSED_IMAGES_FILE)
         self.unableToCompressImageFiles = self.lib.load_file_as_list(filePath=UNABLE_TO_COMPRESS_IMAGES_FILE)
 
@@ -333,7 +334,7 @@ class MegaManager(object):
         logger.setLevel(self.logLevel)
         
         logger.debug(' Creating thread to compress local video files.')
-        # self._load_compressed_video_lists()
+
         self.compressedVideoFiles = self.lib.load_file_as_list(filePath=COMPRESSED_VIDEOS_FILE)
         self.unableToCompressVideoFiles = self.lib.load_file_as_list(filePath=UNABLE_TO_COMPRESS_VIDEOS_FILE)
 
@@ -534,7 +535,7 @@ class MegaManager(object):
                         #     self.removedRemoteFiles.append(remote_filePath)
                         #     self._remove_remote_file(username, password, remote_filePath)
 
-                        self.lib.dump_list_into_file(itemList=self.removedRemoteFiles, file=REMOVED_REMOTE_FILES, )
+                        self.lib.dump_list_into_file(itemList=self.removedRemoteFiles, filePath=REMOVED_REMOTE_FILES, )
 
     def get_mega_manager_log_file(self):
         """
@@ -636,18 +637,18 @@ class MegaManager(object):
 
                                             self.compressedFiles = []
                                             self.compressedFiles.append(local_filePath)
-                                            self.lib.dump_list_into_file(itemList=self.compressedImageFiles, file=COMPRESSED_IMAGES_FILE, )
+                                            self.lib.dump_list_into_file(itemList=self.compressedImageFiles, filePath=COMPRESSED_IMAGES_FILE, )
 
                                         else:
                                             logger.debug(' File cannot be compressed any further "%s"!' % local_filePath)
                                             self.unableToCompressImageFiles.append(local_filePath)
-                                            self.lib.dump_list_into_file(itemList=self.unableToCompressImageFiles, file=UNABLE_TO_COMPRESS_IMAGES_FILE, )
+                                            self.lib.dump_list_into_file(itemList=self.unableToCompressImageFiles, filePath=UNABLE_TO_COMPRESS_IMAGES_FILE, )
 
                                     else:
                                         logger.debug(' Error, image file could not be compressed "%s"!' % local_filePath)
                                         self.unableToCompressImageFiles.append(local_filePath)
                                         self.lib.dump_list_into_file(itemList=self.unableToCompressImageFiles,
-                                                                     file=UNABLE_TO_COMPRESS_IMAGES_FILE, )
+                                                                     filePath=UNABLE_TO_COMPRESS_IMAGES_FILE, )
 
                                 else:
                                     logger.debug(' Error, image file previously processed. Moving on.  "%s"!' % local_filePath)
@@ -699,24 +700,40 @@ class MegaManager(object):
                         if file_subPath is not '':
                             local_filePath = LOCAL_ROOT_adj + file_subPath
 
-                            if path.exists(local_filePath):
+                            if path.isfile(local_filePath):
                                 if (local_filePath not in self.compressedVideoFiles) and (local_filePath not in self.unableToCompressVideoFiles):
 
                                     newFilePath = local_filePath.rsplit(".", 1)[0] + '_NEW.mp4'
 
                                     if path.exists(newFilePath):
-                                        remove(newFilePath)
-                                    # timeout = 2
+                                        for retry in range(100):
+                                            try:
+                                                remove(newFilePath)
+                                                break
+                                            except:
+                                                logger.debug(" Remove failed, retrying...")
                                     returnCode = self.ffmpeg.compress_video_file(local_filePath, targetPath=newFilePath,)
 
+
                                     if returnCode == 0 and path.exists(newFilePath):
-                                        remove(local_filePath)
-                                        rename(newFilePath, sub('_NEW', '', newFilePath))
+                                        for retry in range(100):
+                                            try:
+                                                remove(local_filePath)
+                                                break
+                                            except:
+                                                logger.debug(" Remove failed, retrying...")
+
+                                        for retry in range(100):
+                                            try:
+                                                rename(newFilePath, sub('_NEW', '', newFilePath))
+                                                break
+                                            except:
+                                                logger.debug(" Rename failed, retrying...")
 
                                         logger.debug(' Video file compressed successfully "%s" into "%s"!' % (local_filePath, newFilePath))
                                         self.compressedVideoFiles.append(newFilePath)
                                         self.lib.dump_list_into_file(itemList=self.compressedVideoFiles,
-                                                                  file=COMPRESSED_VIDEOS_FILE, )
+                                                                     filePath=COMPRESSED_VIDEOS_FILE, )
 
                                     elif path.exists(newFilePath):
                                         remove(newFilePath)
@@ -834,59 +851,37 @@ class MegaManager(object):
         accountDetails.append(username + ' - ' + password + '\n')
         chdir('%s' % self.megaToolsDir)
 
-        cmd = 'start /B megadf --free -h -u %s -p %s' % (username, password)
-        proc = Popen(cmd, stdout=PIPE, shell=True)
-        (out, err) = proc.communicate()
+        freeSpace = self.megaTools.get_account_free_space(username=username, password=password)
+        accountDetails.append('FREE SIZE: ' + freeSpace)
 
-        if err:
-            logger.info(str(err))
+        usedSpace = self.megaTools.get_account_used_space(username=username, password=password)
+        accountDetails.append('REMOTE SIZE: ' + usedSpace)
 
-        if not out == '':
-            out = sub('\r', '', out)
-            accountDetails.append('FREE SPACE: ' + out)
-
-        cmd = 'start /B megadf --used -h -u %s -p %s' % (username, password)
-        proc = Popen(cmd, stdout=PIPE, shell=True)
-        (out, err) = proc.communicate()
-
-        if err:
-            logger.info(str(err))
-
-        if not out == '':
-            out = sub('\r', '', out)
-            accountDetails.append('REMOTE SIZE: ' + out)
-
-        remote_root = self.remoteRoot + '/'
-        cmd = 'start /B megals -n -u %s -p %s "%s"' % (username, password, self.remoteRoot)
-        proc = Popen(cmd, stdout=PIPE, shell=True)
-        (out, err) = proc.communicate()
+        subDirs = self.megaTools.get_remote_subdir_names_only(username=username, password=password, remotePath=self.remoteRoot)
 
         directoryLines = []
         totalLocalSize = 0
-        if err:
-            logger.info(str(err))
 
-        if not out == '':
-            lines = out.split('\r\n')
-            for line in lines:
-                localDirSize = 0
-                localDirPath = self.localRoot + '\\' + line
-                remoteDirSize, remoteDirPath = self.megaTools.get_remote_dir_size(username, password, localDirPath, localRoot=self.localRoot, remoteRoot=self.remoteRoot)
 
-                if path.exists(localDirPath) and not line == '':
-                    # localDirSize = path.getsize(localDirPath)
-                    for r, d, f in walk(localDirPath):
-                        for file in f:
-                            filePath = path.join(r, file)
-                            if path.exists(filePath):
-                                localDirSize = localDirSize + path.getsize(filePath)
+        for line in subDirs:
+            localDirSize = 0
+            localDirPath = self.localRoot + '\\' + line
+            remoteDirSize, remoteDirPath = self.megaTools.get_remote_dir_size(username, password, localDirPath, localRoot=self.localRoot, remoteRoot=self.remoteRoot)
 
-                    totalLocalSize = totalLocalSize + localDirSize
-                    directoryLines.append(line + ' (%s remote, %s local)\n' % (self.lib.get_mb_size_from_bytes(int(remoteDirSize)), self.lib.get_mb_size_from_bytes(int(localDirSize))))
+            if path.exists(localDirPath) and not line == '':
+                # localDirSize = path.getsize(localDirPath)
+                for r, d, f in walk(localDirPath):
+                    for file in f:
+                        filePath = path.join(r, file)
+                        if path.exists(filePath):
+                            localDirSize = localDirSize + path.getsize(filePath)
 
-                elif not line == '':
-                    directoryLines.append(line + ' (%s remote, NONE local)\n' % (self.lib.get_mb_size_from_bytes(int(remoteDirSize))))
-                    # accountDetails.append('LOCAL SIZE: NONE \n')
+                totalLocalSize = totalLocalSize + localDirSize
+                directoryLines.append(line + ' (%s remote, %s local)\n' % (self.lib.get_mb_size_from_bytes(int(remoteDirSize)), self.lib.get_mb_size_from_bytes(int(localDirSize))))
+
+            elif not line == '':
+                directoryLines.append(line + ' (%s remote, NONE local)\n' % (self.lib.get_mb_size_from_bytes(int(remoteDirSize))))
+                # accountDetails.append('LOCAL SIZE: NONE \n')
 
 
         accountDetails.append('LOCAL SIZE: %s \n' % self.lib.get_mb_size_from_bytes(totalLocalSize))
@@ -905,7 +900,6 @@ class MegaManager(object):
         Tearing down of MEGA Manager.
 
         :return:
-        :type:
         """
         
         logger = getLogger('MegaManager._tear_down')
@@ -914,13 +908,13 @@ class MegaManager(object):
         logger.info(' Tearing down megaManager!')
         try:
             if self.removeRemote:
-                self.lib.dump_list_into_file(itemList=self.removedRemoteFiles, file=REMOVED_REMOTE_FILES, )
+                self.lib.dump_list_into_file(itemList=self.removedRemoteFiles, filePath=REMOVED_REMOTE_FILES, )
             if self.compressImages:
-                self.lib.dump_list_into_file(itemList=self.compressedImageFiles, file=COMPRESSED_IMAGES_FILE, )
-                self.lib.dump_list_into_file(itemList=self.unableToCompressImageFiles, file=UNABLE_TO_COMPRESS_IMAGES_FILE)
+                self.lib.dump_list_into_file(itemList=self.compressedImageFiles, filePath=COMPRESSED_IMAGES_FILE, )
+                self.lib.dump_list_into_file(itemList=self.unableToCompressImageFiles, filePath=UNABLE_TO_COMPRESS_IMAGES_FILE)
             if self.compressVideos:
-                self.lib.dump_list_into_file(itemList=self.compressedVideoFiles, file=COMPRESSED_VIDEOS_FILE, )
-                self.lib.dump_list_into_file(itemList=self.unableToCompressVideoFiles, file=UNABLE_TO_COMPRESS_VIDEOS_FILE)
+                self.lib.dump_list_into_file(itemList=self.compressedVideoFiles, filePath=COMPRESSED_VIDEOS_FILE, )
+                self.lib.dump_list_into_file(itemList=self.unableToCompressVideoFiles, filePath=UNABLE_TO_COMPRESS_VIDEOS_FILE)
 
             self.lib.kill_running_processes_with_name('megacopy.exe')
             self.lib.kill_running_processes_with_name('megals.exe')
@@ -940,7 +934,7 @@ def get_args():
     :type: Dictionary.
     """
 
-    parser = ArgumentParser(description='Process some integers.')
+    parser = ArgumentParser(description='MEGA Manager is a MEGA cloud storage management and optimization application.')
 
     parser.add_argument('--download', dest='download', action='store_true', default=False,
                         help='If true, items will be downloaded from MEGA')
