@@ -62,23 +62,14 @@ class MegaManager_Lib(object):
             return False
 
 
-<<<<<<< HEAD
     def dump_list_into_file(self, itemList, filePath):
-=======
-    def dump_list_into_file(self, itemList, file):
->>>>>>> bb91ffe169095a5d60a146d886f2bf33fde63df7
         """
         Dump list into file for each item on a new line.
     
         :param itemList: List to dump into file.
         :type itemList: list
-<<<<<<< HEAD
         :param filePath: File to dump to.
         :type filePath: string
-=======
-        :param file: File to dump to.
-        :type file: string
->>>>>>> bb91ffe169095a5d60a146d886f2bf33fde63df7
     
         :return: boolean of whether successful or not
         """
@@ -86,7 +77,6 @@ class MegaManager_Lib(object):
         logger = getLogger('MegaManager_lib.dump_list_into_file')
         logger.setLevel(self.logLevel)
     
-<<<<<<< HEAD
         logger.debug(' Dumping list into %s filePath.' % filePath)
 
         try:
@@ -94,22 +84,6 @@ class MegaManager_Lib(object):
             savez_compressed(filePath, list=npList)
         except Exception as e:
             logger.debug(' Exception: %s' % str(e))
-
-        # fileObj = open('%s' % (filePath), 'w')
-=======
-        logger.debug(' Dumping list into %s file.' % file)
-
-        try:
-            npList = array(itemList)
-            savez_compressed(file, list=npList)
-        except Exception as e:
-            logger.debug(' Exception: %s' % str(e))
-
-        # fileObj = open('%s' % (file), 'w')
->>>>>>> bb91ffe169095a5d60a146d886f2bf33fde63df7
-        #
-        # for item in itemList:
-        #     fileObj.write("%s\n" % item)
     
     def exec_cmd(self, command, workingDir=None, noWindow=False):
         """
@@ -246,24 +220,11 @@ class MegaManager_Lib(object):
         logger.debug(' Loading %s filePath.' % filePath)
 
         items = []
-        if path.exists(filePath):
-<<<<<<< HEAD
+        if path.isfile(filePath):
             try:
                 data = load(file=filePath, allow_pickle=False)
                 items = data.f.list.tolist()
-                # with open(filePath, "r") as ins:
-                #     items = [line.rstrip('\n') for line in ins]
-                # ins.close()
-=======
 
-            try:
-                data = load(file=filePath, allow_pickle=False)
-                items = data.f.list.tolist()
-            # with open(filePath, "r") as ins:
-            #     items = [line.rstrip('\n') for line in ins]
-            #
-            # ins.close()
->>>>>>> bb91ffe169095a5d60a146d886f2bf33fde63df7
             except Exception as e:
                 logger.debug(' Exception: %s' % str(e))
             finally:

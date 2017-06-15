@@ -190,7 +190,6 @@ class MegaTools_Lib(object):
 
         return out, err
 
-<<<<<<< HEAD
     def get_account_free_space(self, username, password):
         """
         Get account free space in gigabytes
@@ -251,8 +250,6 @@ class MegaTools_Lib(object):
 
         return 0
 
-=======
->>>>>>> bb91ffe169095a5d60a146d886f2bf33fde63df7
     def get_remote_dir_size(self, username, password, localDirPath, localRoot, remoteRoot):
         """
         Get remote directory sizes of equivalent local file path
@@ -310,10 +307,6 @@ class MegaTools_Lib(object):
         :type remoteRoot: String.
 
         :return: returns list of directories
-<<<<<<< HEAD
-=======
-        :type: list of strings
->>>>>>> bb91ffe169095a5d60a146d886f2bf33fde63df7
         """
 
         logger = getLogger('MegaTools_Lib.get_remote_dirs')
@@ -422,7 +415,6 @@ class MegaTools_Lib(object):
 
         return 0, ''
 
-<<<<<<< HEAD
     def get_remote_subdir_names_only(self, username, password, remotePath):
         """
         Get remote sub directory names only.
@@ -454,8 +446,6 @@ class MegaTools_Lib(object):
                 return lines
         return []
 
-=======
->>>>>>> bb91ffe169095a5d60a146d886f2bf33fde63df7
     def remove_local_incomplete_files(self, username, password, localRoot, remoteRoot):
         """
         Delete incomplete files from account.
