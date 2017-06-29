@@ -32,7 +32,7 @@ class MegaManager_Lib(object):
         """
         Compress images file.
     
-        :param filePath: File path of image to compress.
+        :param filePath: File path of image to __compressAll.
         :type filePath: string
 
         :return: Boolean of whether compression operation was successful or not.
@@ -43,9 +43,9 @@ class MegaManager_Lib(object):
     
         logger.debug(' Compressing image file "%s".' % filePath)
     
-        # cmd = 'D:\\Python\\Python27\\python.exe "%s\\libs\\compressImages\\compressImages.py" --mode compress "%s"' % (
+        # cmd = 'D:\\Python\\Python27\\python.exe "%s\\libs\\__compressImages\\__compressImages.py" --mode __compressAll "%s"' % (
         #     self.workingDir, filePath)
-        # cmd = 'python "%s\\libs\\compressImages\\compressImages.py" --mode compress "%s"' % (
+        # cmd = 'python "%s\\libs\\__compressImages\\__compressImages.py" --mode __compressAll "%s"' % (
         #     self.workingDir, filePath)
         # proc1 = self.exec_cmd(command=cmd, noWindow=True)
         #
@@ -62,14 +62,14 @@ class MegaManager_Lib(object):
             return False
 
 
-    def dump_list_into_file(self, itemList, file):
+    def dump_list_into_file(self, itemList, filePath):
         """
         Dump list into file for each item on a new line.
     
         :param itemList: List to dump into file.
         :type itemList: list
-        :param file: File to dump to.
-        :type file: string
+        :param filePath: File to dump to.
+        :type filePath: string
     
         :return: boolean of whether successful or not
         """
@@ -77,18 +77,13 @@ class MegaManager_Lib(object):
         logger = getLogger('MegaManager_lib.dump_list_into_file')
         logger.setLevel(self.logLevel)
     
-        logger.debug(' Dumping list into %s file.' % file)
+        logger.debug(' Dumping list into %s filePath.' % filePath)
 
         try:
             npList = array(itemList)
-            savez_compressed(file, list=npList)
+            savez_compressed(filePath, list=npList)
         except Exception as e:
             logger.debug(' Exception: %s' % str(e))
-
-        # fileObj = open('%s' % (file), 'w')
-        #
-        # for item in itemList:
-        #     fileObj.write("%s\n" % item)
     
     def exec_cmd(self, command, workingDir=None, noWindow=False):
         """
@@ -225,15 +220,11 @@ class MegaManager_Lib(object):
         logger.debug(' Loading %s filePath.' % filePath)
 
         items = []
-        if path.exists(filePath):
-
+        if path.isfile(filePath):
             try:
                 data = load(file=filePath, allow_pickle=False)
                 items = data.f.list.tolist()
-            # with open(filePath, "r") as ins:
-            #     items = [line.rstrip('\n') for line in ins]
-            #
-            # ins.close()
+
             except Exception as e:
                 logger.debug(' Exception: %s' % str(e))
             finally:

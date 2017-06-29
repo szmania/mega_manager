@@ -16,9 +16,9 @@ SCRIPT_DIR = path.dirname(path.realpath(__file__))
 class FFMPEG_Lib(object):
     def __init__(self, ffmpegExePath, logLevel='DEBUG'):
         """
-        Library for ffmpeg converter and encoder interaction.
+        Library for __ffmpeg converter and encoder interaction.
 
-        :param ffmpegExePath: Path to ffmpeg.exe
+        :param ffmpegExePath: Path to __ffmpeg.exe
         :type ffmpegExePath: String.
         :param logLevel: Logging level setting ie: "DEBUG" or "WARN"
         :type logLevel: String.
@@ -31,7 +31,7 @@ class FFMPEG_Lib(object):
         """
         Compress video file.
     
-        :param filePath: File path of video to compress.
+        :param filePath: File path of video to __compressAll.
         :type filePath: string
         :param targetPath: File path of video to be compressed into.
         :type targetPath: string
@@ -39,12 +39,12 @@ class FFMPEG_Lib(object):
         :return: subprocess object
         """
     
-        logger = getLogger('lib.compress_video_file')
+        logger = getLogger('__lib.compress_video_file')
         logger.setLevel(self.logLevel)
     
         logger.debug(' Compressing video file: "%s"' % filePath)
     
-        cmd = '"%s" -i "%s" -vf "scale=\'if(gte(iw,720), 720, iw)\':-2" -preset medium -threads 1 "%s"' % (self.ffmpegExePath, filePath, targetPath)
+        cmd = '"%s" -i "%s" -vf "scale=\'if(gte(iw,720), 720, iw)\':-2" -preset medium -__threads 1 "%s"' % (self.ffmpegExePath, filePath, targetPath)
     
         proc1 = self._exec_cmd(command=cmd, noWindow=True)
     
