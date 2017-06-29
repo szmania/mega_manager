@@ -68,8 +68,8 @@ class MegaManager(object):
 
         self.__compressedImagesFilePath = COMPRESSED_IMAGES_FILE
         self.__compressedVideosFilePath = COMPRESSED_VIDEOS_FILE
-        self.__compressionImageExts = COMPRESSION_IMAGE_EXTENSIONS
-        self.__compressionVideoExts = COMPRESSION_VIDEO_EXTENSIONS
+        self.__compressionImageExtensions = COMPRESSION_IMAGE_EXTENSIONS
+        self.__compressionVideoExtensions = COMPRESSION_VIDEO_EXTENSIONS
         self.__megaManager_logFilePath = MEGAMANAGER_LOGFILEPATH
         self.__removedRemoteFilePath = REMOVED_REMOTE_FILES
         self.__unableToCompressImagesFilePath = UNABLE_TO_COMPRESS_IMAGES_FILE
@@ -244,7 +244,6 @@ class MegaManager(object):
             megaFileThreads_found = False
 
             if not time() - startTime > timeout:
-                sleep(self.__lib.get_sleep_time())
                 for thread in self.__threads:
                     if not thread.isAlive():
                         self.__threads.remove(thread)
@@ -296,10 +295,10 @@ class MegaManager(object):
                         dict['user'] = username
                         dict['pass'] = password
                         foundUserPass.append(dict)
+            ins.close()
         except Exception as e:
             logger.warning(' Exception: %s' % str(e))
-        finally:
-            ins.close()
+            
         return foundUserPass
 
     def _create_thread_create_mega_accounts_data_file(self):
@@ -332,8 +331,6 @@ class MegaManager(object):
                                              name='thread_unfinishedFileRemover_%s' % account['user'])
             self.__threads.append(t_unfinishedFileRemover)
             t_unfinishedFileRemover.start()
-
-            # sleep(self.__lib.get_sleep_time())
 
     def _create_thread_download(self):
         """
@@ -568,7 +565,6 @@ class MegaManager(object):
                     fileName, fileExt = path.splitext(split(':\d{2} ', line)[1])
                     if fileExt in self.__compressionImageExtensions:
                         remote_filePath = split(':\d{2} ', line)[1]
-                        # remote_filePath = ' '.join(line.split()[6:])
                         file_subPath = sub(self.__remoteRoot, '', remote_filePath)
 
                         if file_subPath is not '':
@@ -576,12 +572,9 @@ class MegaManager(object):
 
                             if (path.exists(local_filePath)):
                                 if (local_filePath not in self.__compressedImageFiles) and (local_filePath not in self.__unableToCompressImageFiles):
-                                    # timeout = 2
                                     result = self.__lib.compress_image_file(local_filePath, )
                                     if result:
-                                        # startTime = time.time()
                                         compressPath_backup = local_filePath + '.compressimages-backup'
-                                        # while time.time() - startTime < timeout:
                                         if path.exists(compressPath_backup):
                                             logger.debug(' File compressed successfully "%s"!' % local_filePath)
                                             try:
@@ -610,8 +603,6 @@ class MegaManager(object):
                                     logger.debug(' Error, image file previously processed. Moving on.  "%s"!' % local_filePath)
                             else:
                                 logger.debug(' Error, image file does NOT exist locally. Moving on.  "%s"!' % local_filePath)
-
-            sleep(self.__lib.get_sleep_time())
 
     def _find_video_files_to_compress(self, username, password):
         """
@@ -647,7 +638,7 @@ class MegaManager(object):
                 remote_type = line.split()[2]
                 if remote_type == '0':
                     fileName, fileExt = path.splitext(split(':\d{2} ', line)[1])
-                    if fileExt in VIDEO_EXTENSIONS:
+                    if fileExt in self.___compressionVideoExtensions:
                         remote_filePath = split(':\d{2} ', line)[1]
                         file_subPath = sub(self.__remoteRoot, '', remote_filePath)
 
@@ -702,10 +693,6 @@ class MegaManager(object):
                                 logger.debug(
                                     ' Error, local video file doesnt exist: "%s"!' % local_filePath)
 
-            sleep(self.__lib.get_sleep_time())
-
-
-
     def _compress_image_file_delete_backup(self, filePath):
         """
         Compress image file and delete backup file that is created of old file
@@ -749,10 +736,6 @@ class MegaManager(object):
                                                   name='thread_megaFile_%s' % account['user'])
                     t_megaFile.start()
                     self.__threads.append(t_megaFile)
-                    sleep(self.__lib.get_sleep_time())
-
-
-                # self._wait_for_threads_to_finish(__threads, timeout=500, sleep=1)
 
             outs.close()
 
