@@ -205,7 +205,11 @@ class MegaTools_Lib(object):
         logger = getLogger('MegaTools_Lib.get_account_used_space')
         logger.setLevel(self.logLevel)
 
+<<<<<<< HEAD
         chdir('%s' % self.__megaToolsDir)
+=======
+        chdir('%s' % self.megaToolsDir)
+>>>>>>> 94ed4e8ae070cc4ce48651224d63dbccaafc9544
 
         cmd = 'start /B megadf --free -h --gb -u %s -p %s' % (username, password)
         proc = Popen(cmd, stdout=PIPE, shell=True)
@@ -235,7 +239,11 @@ class MegaTools_Lib(object):
         logger = getLogger('MegaTools_Lib.get_account_used_space')
         logger.setLevel(self.logLevel)
 
+<<<<<<< HEAD
         chdir('%s' % self.__megaToolsDir)
+=======
+        chdir('%s' % self.megaToolsDir)
+>>>>>>> 94ed4e8ae070cc4ce48651224d63dbccaafc9544
 
         cmd = 'start /B megadf --used -h --gb -u %s -p %s' % (username, password)
         proc = Popen(cmd, stdout=PIPE, shell=True)
@@ -415,6 +423,7 @@ class MegaTools_Lib(object):
 
         return 0, ''
 
+<<<<<<< HEAD
     def get_remote_files(self, username, password, remotePath='/Root'):
         """
         Get remote files list.
@@ -442,6 +451,8 @@ class MegaTools_Lib(object):
 
         return remoteFiles
 
+=======
+>>>>>>> 94ed4e8ae070cc4ce48651224d63dbccaafc9544
     def get_remote_subdir_names_only(self, username, password, remotePath):
         """
         Get remote sub directory names only.

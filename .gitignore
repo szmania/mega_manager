@@ -20,6 +20,10 @@ lib64/
 parts/
 sdist/
 var/
+<<<<<<< HEAD
+wheels/
+=======
+>>>>>>> bb91ffe169095a5d60a146d886f2bf33fde63df7
 *.egg-info/
 .installed.cfg
 *.egg
@@ -42,7 +46,11 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+<<<<<<< HEAD
+*.cover
+=======
 *,cover
+>>>>>>> bb91ffe169095a5d60a146d886f2bf33fde63df7
 .hypothesis/
 
 # Translations
@@ -66,7 +74,11 @@ docs/_build/
 # PyBuilder
 target/
 
+<<<<<<< HEAD
+# Jupyter Notebook
+=======
 # IPython Notebook
+>>>>>>> bb91ffe169095a5d60a146d886f2bf33fde63df7
 .ipynb_checkpoints
 
 # pyenv
@@ -75,19 +87,49 @@ target/
 # celery beat schedule file
 celerybeat-schedule
 
+<<<<<<< HEAD
+# SageMath parsed files
+*.sage.py
+
+=======
+>>>>>>> bb91ffe169095a5d60a146d886f2bf33fde63df7
 # dotenv
 .env
 
 # virtualenv
+<<<<<<< HEAD
+.venv
+=======
+>>>>>>> bb91ffe169095a5d60a146d886f2bf33fde63df7
 venv/
 ENV/
 
 # Spyder project settings
 .spyderproject
+<<<<<<< HEAD
+.spyproject
+=======
+>>>>>>> bb91ffe169095a5d60a146d886f2bf33fde63df7
 
 # Rope project settings
 .ropeproject
 
+<<<<<<< HEAD
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+
+$ szmania
+*.cfg
+.idea/
+*.log
+*.tmp
+*.npz
+tools/ffmpeg
+tools/megaTools_1_1_98
+=======
 # szmania
 *.tmp
 *.log
