@@ -95,10 +95,12 @@ class MegaManager(object):
             self._setup_logger(self.__megaManager_logFilePath)
             self._load_config_file()
 
-            self.__ffmpeg = FFMPEG_Lib(ffmpegExePath=self.__ffmpegExePath, logLevel=self.__logLevel)
+            self.__ffmpeg = FFMPEG_Lib(ffmpegExePath=self.__ffmpegExePath, logLevel=self.__logLevel,
+                                       logFilePath=WORKING_DIR + '\\data\\ffmpeg.log')
             self.__lib = Lib(logLevel=self.__logLevel)
             self.__megaTools = MegaTools_Lib(megaToolsDir=self.__megaToolsDir, downSpeedLimit=self.__downSpeed,
-                                             upSpeedLimit=self.__upSpeed, logLevel=self.__logLevel)
+                                             upSpeedLimit=self.__upSpeed, logLevel=self.__logLevel
+                                             logFilePath=WORKING_DIR + '\\data\\megaTools.log')
 
             self.__foundUserPass = self._get_accounts_user_pass(file=self.__megaAccountsPath)
 
@@ -544,7 +546,7 @@ class MegaManager(object):
         localRoot_adj = sub('\\\\', '/', self.__localRoot)
         chdir('%s' % self.__megaToolsDir)
 
-        cmd = 'megals -lnR -u %s -p %s "%s"' % (username, password, self.__remoteRoot)
+        cmd = 'megals -lR -u %s -p %s "%s"' % (username, password, self.__remoteRoot)
         proc = Popen(cmd, stdout=PIPE, shell=True)
 
         (out, err) = proc.communicate()
@@ -613,7 +615,7 @@ class MegaManager(object):
         localRoot_adj = sub('\\\\', '/', self.__localRoot)
         chdir('%s' % self.__megaToolsDir)
 
-        cmd = 'megals -lnR -u %s -p %s "%s"' % (username, password, self.__remoteRoot)
+        cmd = 'megals -lR -u %s -p %s "%s"' % (username, password, self.__remoteRoot)
         proc = Popen(cmd, stdout=PIPE, shell=True)
 
         (out, err) = proc.communicate()
@@ -624,7 +626,7 @@ class MegaManager(object):
                 remote_type = line.split()[2]
                 if remote_type == '0':
                     fileName, fileExt = path.splitext(split(':\d{2} ', line)[1])
-                    if fileExt in self.___compressionVideoExtensions:
+                    if fileExt in self.__compressionVideoExtensions:
                         remote_filePath = split(':\d{2} ', line)[1]
                         file_subPath = sub(self.__remoteRoot, '', remote_filePath)
 

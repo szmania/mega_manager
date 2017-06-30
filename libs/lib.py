@@ -68,7 +68,10 @@ class Lib(object):
     
         logger.debug(' Executing command: "%s"' % command)
 
-        outFile = open(outputFile, 'a')
+        if outputFile:
+            outFile = open(outputFile, 'a')
+        else:
+            outFile=None
 
         if workingDir:
             chdir(workingDir)
@@ -77,7 +80,7 @@ class Lib(object):
             CREATE_NO_WINDOW = 0x08000000
             proc = call(command, stdout=outFile, stderr=outFile, creationflags=CREATE_NO_WINDOW)
         else:
-            proc = call(command)
+            proc = call(command,  stdout=outFile, stderr=outFile)
     
         while not proc.poll():
             pass

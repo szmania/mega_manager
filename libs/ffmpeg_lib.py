@@ -10,11 +10,11 @@ from os import path
 
 __author__ = 'szmania'
 
+FFMPEG_LOG = 'ffmpeg.log'
 SCRIPT_DIR = path.dirname(path.realpath(__file__))
 
-
 class FFMPEG_Lib(object):
-    def __init__(self, ffmpegExePath, logLevel='DEBUG'):
+    def __init__(self, ffmpegExePath, logLevel='DEBUG', logFilePath=FFMPEG_LOG):
         """
         Library for ffmpeg converter and encoder interaction.
 
@@ -25,8 +25,10 @@ class FFMPEG_Lib(object):
 
         self.__ffmpegExePath = ffmpegExePath
         self.__logLevel = logLevel
+        self.__ffmpegLog = logFilePath
 
         self.__lib = Lib(logLevel=logLevel)
+
 
     def compress_video_file(self, filePath, targetPath):
         """
@@ -45,10 +47,10 @@ class FFMPEG_Lib(object):
     
         logger.debug(' Compressing video file: "%s"' % filePath)
     
-        cmd = '"%s" -i "%s" -vf "scale=\'if(gte(iw,720), 720, iw)\':-2" -preset medium -__threads 1 "%s"' % \
+        cmd = '"%s" -i "%s" -vf "scale=\'if(gte(iw,720), 720, iw)\':-2" -preset medium -threads 1 "%s"' % \
               (self.__ffmpegExePath, filePath, targetPath)
 
-        result = self.__lib.exec_cmd(command=cmd, noWindow=True)
+        result = self.__lib.exec_cmd(command=cmd, noWindow=True, outputFile=self.__ffmpegLog)
 
         if result:
             logger.debug(' Success, could compress video file "%s" to "%s".' % (filePath, targetPath))

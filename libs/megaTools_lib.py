@@ -14,12 +14,12 @@ from tempfile import gettempdir
 
 __author__ = 'szmania'
 
-MEGATOOLS_LOG = '__megaTools.log'
+MEGATOOLS_LOG = 'megaTools.log'
 TEMP_LOGFILE_PATH = gettempdir() + '\\megaManager_error_files_%d.tmp' % randint(0, 9999999999)
 SCRIPT_DIR = path.dirname(path.realpath(__file__))
 
 class MegaTools_Lib(object):
-    def __init__(self, megaToolsDir, downSpeedLimit=None, upSpeedLimit=None, logLevel='DEBUG'):
+    def __init__(self, megaToolsDir, downSpeedLimit=None, upSpeedLimit=None, logLevel='DEBUG', logFilePath=MEGATOOLS_LOG):
         """
         Library for interaction with MegaTools. A tool suite for MEGA.
 
@@ -29,11 +29,12 @@ class MegaTools_Lib(object):
             upSpeedLimit (int): Max __upload speed limit.
             logLevel (str): Logging level setting ie: "DEBUG" or "WARN"
         """
-        self.__megaTools_log = MEGATOOLS_LOG
         self.__megaToolsDir = megaToolsDir
         self.__downSpeedLimit = downSpeedLimit
         self.__upSpeedLimit = upSpeedLimit
         self.__logLevel = logLevel
+        self.__megaTools_log = logFilePath
+
         self.__lib = Lib(logLevel=logLevel)
 
     def download_all_files_from_account(self, username, password, localRoot, remoteRoot):
