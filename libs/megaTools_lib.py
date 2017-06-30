@@ -71,7 +71,7 @@ class MegaTools_Lib(object):
         # while not proc.poll():
         #     err = proc.stderr.readline()
         #
-        #     if err == '':
+        #     if not err:
         #         break
         #     logFile.write('%s - %s: %s' % (username, password, err))
         #     temp_logFile_stderr.write('%s - %s: %s' % (username, password, err))
@@ -339,7 +339,7 @@ class MegaTools_Lib(object):
 
         out, err = self.__lib.exec_cmd_and_return_output(command=cmd, workingDir=self.__megaToolsDir)
 
-        if err == '':
+        if not err:
             if not out == '':
                 lines = out.split('\r\n')
                 remoteFiles = []
@@ -373,7 +373,7 @@ class MegaTools_Lib(object):
         cmd = 'start /B megals -n -u %s -p %s "%s"' % (username, password, remote_root)
         out, err = self.__lib.exec_cmd_and_return_output(command=cmd, workingDir=self.__megaToolsDir)
 
-        if err == '':
+        if not err:
             if not out == '':
                 lines = out.split('\r\n')
                 logger.debug(' Success, could get remote sub directory names.')
@@ -401,7 +401,7 @@ class MegaTools_Lib(object):
         cmd = 'start /B megals -ln -u %s -p %s' % (username, password)
         out, err = self.__lib.exec_cmd_and_return_output(command=cmd, workingDir=self.__megaToolsDir)
 
-        if err == '':
+        if not err:
             if not out == '':
                 lines = out.split('\r\n')
                 for line in lines:
@@ -494,7 +494,7 @@ class MegaTools_Lib(object):
         # lines = out.split('\r\n')
         # logFile.close()
 
-        if err == '':
+        if not err:
             logger.debug(' Success, uploaded local dir.')
             return True
 
@@ -525,7 +525,7 @@ class MegaTools_Lib(object):
         cmd = 'megals -ln -u %s -p %s "%s"' % (username, password, remoteRoot)
         out, err = self.__lib.exec_cmd_and_return_output(command=cmd, workingDir=self.__megaToolsDir, outputFile=self.__megaTools_log)
 
-        if err == '':
+        if not err:
             lines = out.split('\r\n')
             for line in lines:
                 if not line == '':

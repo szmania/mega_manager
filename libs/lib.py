@@ -113,9 +113,9 @@ class Lib(object):
         if workingDir:
             chdir(workingDir)
 
-        outFile = open(outputFile, 'a')
         try:
-            if outFile:
+            if outputFile:
+                outFile = open(outputFile, 'a')
                 proc = Popen(command, stdout=outputFile, stderr=outFile)
             else:
                 proc = Popen(command, stdout=PIPE, shell=True)
@@ -125,7 +125,8 @@ class Lib(object):
             logger.warning(' Exception: %s' % str(e))
             return None, None
         finally:
-            outFile.close()
+            if outputFile:
+                outFile.close()
 
         return out, err
 

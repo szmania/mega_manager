@@ -115,7 +115,7 @@ class MegaManager(object):
         """
 
         for key, value in kwargs.items():
-            setattr(self, '__%s' % key, value)
+            setattr(self, '_MegaManager__%s' % key, value)
 
     def _setup_logger(self, logFile):
         """
@@ -731,15 +731,9 @@ class MegaManager(object):
         """
         Creats dictionary of account data (remote size, local size, etc...) for self.__megaAccountsOutputPath file.
 
-        :param username: Username of account to get data for 
-        :type username: String
-        :param password: Passworde of account to get data for 
-        :type password: String
-        :param self.__remoteRoot: Remote path of account to get data for.
-        :type self.__remoteRoot: String
-
-        :return:
-        :type:
+        Args:
+            username (str): username of account to find local video files for
+            password (str): password of account to find local video files for
         """
 
         logger = getLogger('MegaManager._get_account_details')
@@ -757,38 +751,45 @@ class MegaManager(object):
 
         subDirs = self.__megaTools.get_remote_subdir_names_only(username=username, password=password, remotePath=self.__remoteRoot)
 
-
         directoryLines = []
         totalLocalSize = 0
 
+        if subDirs:
+            for line in subDirs:
+                localDirSize = 0
+                localDirPath = self.__localRoot + '\\' + line
+                # remoteDirPath = self.__lib.get_remote_path_from_local_path(localPath=localDirPath, localRoot=self.__localRoot, remoteRoot=self.__remoteRoot)
 
-        for line in subDirs:
-            localDirSize = 0
-            localDirPath = self.__localRoot + '\\' + line
-            remoteDirSize, remoteDirPath = self.__megaTools.get_remote_dir_size(username, password, localDirPath, localRoot=self.__localRoot, remoteRoot=self.__remoteRoot)
+                if path.exists(localDirPath) and not line == '':
+                    # localDirSize = path.getsize(localDirPath)
+                    for r, d, f in walk(localDirPath):
+                        for file in f:
+                            filePath = path.join(r, file)
+                            if path.exists(filePath):
+                                localDirSize = localDirSize + path.getsize(filePath)
 
-            if path.exists(localDirPath) and not line == '':
-                # localDirSize = path.getsize(localDirPath)
-                for r, d, f in walk(localDirPath):
-                    for file in f:
-                        filePath = path.join(r, file)
-                        if path.exists(filePath):
-                            localDirSize = localDirSize + path.getsize(filePath)
+                    totalLocalSize = totalLocalSize + localDirSize
+                    remoteDirSize = self.__megaTools.get_remote_dir_size(username, password, localDirPath,
+                                                                         localRoot=self.__localRoot,
+                                                                         remoteRoot=self.__remoteRoot)
 
-                totalLocalSize = totalLocalSize + localDirSize
-                directoryLines.append(line + ' (%s remote, %s local)\n' % (self.__lib.get_mb_size_from_bytes(int(remoteDirSize)), self.__lib.get_mb_size_from_bytes(int(localDirSize))))
+                    directoryLines.append(line +
+                                          ' (%s remote, %s local)\n' % (self.__lib.get_mb_size_from_bytes(int(remoteDirSize)), self.__lib.get_mb_size_from_bytes(int(localDirSize))))
 
-            elif not line == '':
-                directoryLines.append(line + ' (%s remote, NONE local)\n' % (self.__lib.get_mb_size_from_bytes(int(remoteDirSize))))
+                elif not line == '':
+                    directoryLines.append(line + ' (%s remote, NONE local)\n' % (self.__lib.get_mb_size_from_bytes(int(remoteDirSize))))
 
-        accountDetails.append('LOCAL SIZE: %s \n' % self.__lib.get_mb_size_from_bytes(totalLocalSize))
+            accountDetails.append('LOCAL SIZE: %s \n' % self.__lib.get_mb_size_from_bytes(totalLocalSize))
 
-        for line in directoryLines:
-            accountDetails.append(line)
-        accountDetails.append('\n')
-        accountDetails.append('\n')
+            for line in directoryLines:
+                accountDetails.append(line)
+            accountDetails.append('\n')
+            accountDetails.append('\n')
 
-        self.__accounts_details_dict[username] = accountDetails
+            self.__accounts_details_dict[username] = accountDetails
+        else:
+            logger.error(' Error, could not get remote directory names!')
+            return False
 
     def _tear_down(self):
         """
@@ -829,34 +830,34 @@ def get_args():
 
     parser = ArgumentParser(description='MEGA Manager is a MEGA cloud storage management and optimization application.')
 
-    parser.add_argument('--download', dest='__download', action='store_true', default=False,
+    parser.add_argument('--download', dest='download', action='store_true', default=False,
                         help='If true, items will be downloaded from MEGA')
 
-    parser.add_argument('--upload', dest='__upload', action='store_true', default=False,
+    parser.add_argument('--upload', dest='upload', action='store_true', default=False,
                         help='If true, items will be uploaded to MEGA')
 
-    parser.add_argument('--removeRemote', dest='__removeRemote', action='store_true', default=False,
+    parser.add_argument('--removeRemote', dest='removeRemote', action='store_true', default=False,
                         help='If true, this will allow for remote files to be removed.')
 
-    parser.add_argument('--removeIncomplete', dest='__removeIncomplete', action='store_true', default=False,
+    parser.add_argument('--removeIncomplete', dest='removeIncomplete', action='store_true', default=False,
                         help='If true, this will allow for local downloaded files that are incomplete to be removed.')
 
-    parser.add_argument('--compressAll', dest='__compressAll', action='store_true', default=False,
-                        help='If true, this will __compressAll local image and video files.')
+    parser.add_argument('--compressAll', dest='compressAll', action='store_true', default=False,
+                        help='If true, this will compressAll local image and video files.')
 
-    parser.add_argument('--compressImages', dest='__compressImages', action='store_true', default=False,
-                        help='If true, this will __compressAll local image files.')
+    parser.add_argument('--compressImages', dest='compressImages', action='store_true', default=False,
+                        help='If true, this will compressAll local image files.')
 
-    parser.add_argument('--compressVideos', dest='__compressVideos', action='store_true', default=False,
+    parser.add_argument('--compressVideos', dest='compressVideos', action='store_true', default=False,
                         help='If true, this will __compressAll local video files.')
 
-    parser.add_argument('--downSpeed', dest='__downSpeed', type=int, default=None,
-                        help='Total __download speed limit.')
+    parser.add_argument('--downSpeed', dest='downSpeed', type=int, default=None,
+                        help='Total download speed limit.')
 
-    parser.add_argument('--upSpeed', dest='__upSpeed', type=int, default=None,
-                        help='Total __upload speed limit.')
+    parser.add_argument('--upSpeed', dest='upSpeed', type=int, default=None,
+                        help='Total upload speed limit.')
 
-    parser.add_argument('--log', dest='__logLevel', default='INFO',
+    parser.add_argument('--log', dest='logLevel', default='INFO',
                         help='Set logging level')
 
     args = parser.parse_args()
