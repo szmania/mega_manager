@@ -529,17 +529,11 @@ class MegaManager(object):
 
     def _find_image_files_to_compress(self, username, password):
         """
-        Find image files to __compressAll.
+        Find image files to compress.
 
-        :param username: Username of account to find local images for.
-        :type username: String.
-        :param password: Password of account to find local images for.
-        :type password: String.
-        :param self.__remoteRoot: Remote path to iterate through.
-        :type self.__remoteRoot: String.
-
-        :return:
-        :type:
+        Args:
+            username (str): Username of account to find local images for.
+            password (str): Password of account to find local images for.
         """
 
         logger = getLogger('MegaManager._find_image_files_to_compress')
@@ -689,8 +683,6 @@ class MegaManager(object):
         """
         Create self.__megaAccountsOutputPath file. File that has all fetched data of accounts and local and remote spaces of each account.
 
-        :return:
-        :type:
         """
 
         logger = getLogger('MegaManager._create_mega_accounts_data_file')
