@@ -10,7 +10,7 @@ Positional arguments:
 
 Optional arguments:  
   `-h, --help`          show this help message and exit  
-  `--mode {compress,restorebackup,deletebackup}` Mode to run with (default: compress)  
+  `--mode {compress,restorebackup,deletebackup}` Mode to solve with (default: compress)
   * `compress`: Compress the image(s).  
   * `restorebackup`: Restore the backup images (valid for directory path only).  
   * `deletebackup`: Delete the backup images (valid for directory path only).  

@@ -5,8 +5,8 @@
 ###
 
 from logging import getLogger
-from os import chdir, path
-from subprocess import call
+from .lib import Lib
+from os import path
 
 __author__ = 'szmania'
 
@@ -18,66 +18,41 @@ class FFMPEG_Lib(object):
         """
         Library for ffmpeg converter and encoder interaction.
 
-        :param ffmpegExePath: Path to ffmpeg.exe
-        :type ffmpegExePath: String.
-        :param logLevel: Logging level setting ie: "DEBUG" or "WARN"
-        :type logLevel: String.
+        Args:
+            ffmpegExePath (str): Path to ffmpeg.exe
+            logLevel (str): Logging level setting ie: "DEBUG" or "WARN"
         """
 
-        self.ffmpegExePath = ffmpegExePath
-        self.logLevel = logLevel
+        self.__ffmpegExePath = ffmpegExePath
+        self.__logLevel = logLevel
+
+        self.__lib = Lib(logLevel=logLevel)
 
     def compress_video_file(self, filePath, targetPath):
         """
         Compress video file.
-    
-        :param filePath: File path of video to compress.
-        :type filePath: string
-        :param targetPath: File path of video to be compressed into.
-        :type targetPath: string
-    
-        :return: subprocess object
+
+        Args:
+            filePath (str): File path of video to __compressAll.
+            targetPath (str): File path of video to be compressed into.
+
+        Returns:
+            subprocess object:
         """
     
-        logger = getLogger('lib.compress_video_file')
-        logger.setLevel(self.logLevel)
+        logger = getLogger('__lib.compress_video_file')
+        logger.setLevel(self.__logLevel)
     
         logger.debug(' Compressing video file: "%s"' % filePath)
     
-        cmd = '"%s" -i "%s" -vf "scale=\'if(gte(iw,720), 720, iw)\':-2" -preset medium -threads 1 "%s"' % (self.ffmpegExePath, filePath, targetPath)
-    
-        proc1 = self._exec_cmd(command=cmd, noWindow=True)
-    
-        return proc1
+        cmd = '"%s" -i "%s" -vf "scale=\'if(gte(iw,720), 720, iw)\':-2" -preset medium -__threads 1 "%s"' % \
+              (self.__ffmpegExePath, filePath, targetPath)
 
+        result = self.__lib.exec_cmd(command=cmd, noWindow=True)
 
-    def _exec_cmd(self, command, workingDir=None, noWindow=False):
-        """
-        Execute given command.
-
-        :param command: Command to execute.
-        :type command: String
-        :param workingDir: Working directory.
-        :type workingDir: String.
-        :param noWindow: No window will be created if set to True.
-        :type noWindow: Boolean
-
-        :return: subprocess object
-        """
-
-        logger = getLogger('FFMPEG_Lib._exec_cmd')
-        logger.setLevel(self.logLevel)
-
-        logger.debug(' Executing command: "%s"' % command)
-
-        if workingDir:
-            chdir(workingDir)
-
-        if noWindow:
-            CREATE_NO_WINDOW = 0x08000000
-            proc = call(command, creationflags=CREATE_NO_WINDOW)
+        if result:
+            logger.debug(' Success, could compress video file "%s" to "%s".' % (filePath, targetPath))
         else:
-            proc = call(command)
-
-        return proc
+            logger.error(' Error, could NOT compress video file "%s"!' % filePath)
+        return result
 

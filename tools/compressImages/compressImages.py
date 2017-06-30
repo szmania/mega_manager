@@ -123,7 +123,7 @@ class CompressImage(ProcessBase):
             newsize = getsize(filename)
 
             if newsize >= origsize:
-                print 'Cannot further compress "' + filename + '".'
+                print 'Cannot further __compressAll "' + filename + '".'
                 return False
 
             # Successful compression
@@ -173,7 +173,7 @@ class DeleteBackupImage(ProcessBase):
 
 if __name__ == "__main__":
     # Argument parsing
-    modecompress = 'compress'
+    modecompress = '__compressAll'
     moderestorebackup = 'restorebackup'
     modedeletebackup = 'deletebackup'
     parser = ArgumentParser(description='Reduce file size of PNG and JPEG images.')
