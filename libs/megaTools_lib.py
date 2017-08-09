@@ -14,7 +14,7 @@ from tempfile import gettempdir
 
 __author__ = 'szmania'
 
-MEGATOOLS_LOG = '__megaTools.log'
+MEGATOOLS_LOG = 'megaTools.log'
 TEMP_LOGFILE_PATH = gettempdir() + '\\megaManager_error_files_%d.tmp' % randint(0, 9999999999)
 SCRIPT_DIR = path.dirname(path.realpath(__file__))
 
@@ -23,22 +23,11 @@ class MegaTools_Lib(object):
         """
         Library for interaction with MegaTools. A tool suite for MEGA.
 
-<<<<<<< HEAD
         Args:
             megaToolsDir (str): Path to megaTools directory which includes megaget.exe, megals.exe, mega.copy.
             downSpeedLimit (int): Max download speed limit.
             upSpeedLimit (int): Max upload speed limit.
             logLevel (str): Logging level setting ie: "DEBUG" or "WARN"
-=======
-        :param megaToolsDir: Path to __megaTools directory which includes megaget.exe, megals.exe, mega.copy.
-        :type megaToolsDir: string
-        :param downSpeedLimit: Max __download speed limit.
-        :type downSpeedLimit: Integer.
-        :param upSpeedLimit: Max __upload speed limit.
-        :type upSpeedLimit: Integer.
-        :param logLevel: Logging level setting ie: "DEBUG" or "WARN"
-        :type logLevel: String.
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
         """
         self.__megaToolsDir = megaToolsDir
         self.__downSpeedLimit = downSpeedLimit
@@ -46,45 +35,23 @@ class MegaTools_Lib(object):
         self.__logLevel = logLevel
         self.__megaTools_log = logFilePath
 
-<<<<<<< HEAD
         self.__lib = Lib(logLevel=logLevel)
-=======
-        self.__megaToolsDir = megaToolsDir
-        self.downSpeedLimit = downSpeedLimit
-        self.upSpeedLimit = upSpeedLimit
-        self.logLevel = logLevel
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
 
     def download_all_files_from_account(self, username, password, localRoot, remoteRoot):
         """
         Download all account files.
 
-<<<<<<< HEAD
         Args:
             username (str): username of account to __download file from
             password (str): password of account to __download file from
             localRoot (str): Local path to __download file to
             remoteRoot (str): Remote path of file to __download
-=======
-        :param username: username of account to __download file from
-        :type username: string
-        :param password: password of account to __download file from
-        :type password: string
-        :param localRoot: Local path to __download file to
-        :type localRoot: string
-        :param remoteRoot: Remote path of file to __download
-        :type remoteRoot: string
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
 
         Returns:
         """
 
         logger = getLogger('MegaTools_Lib.download_all_files_from_account')
-<<<<<<< HEAD
         logger.setLevel(self.__logLevel)
-=======
-        logger.setLevel(self.logLevel)
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
 
         logger.debug(' MEGA downloading directory from account "%s" from "%s" to "%s"' % (username, localRoot, remoteRoot))
         # logFile = open(self.__megaTools_log, 'a')
@@ -92,81 +59,31 @@ class MegaTools_Lib(object):
         # logFile_stdout = open(LOGFILE_STDOUT, 'a')
         temp_logFile_stderr = open(TEMP_LOGFILE_PATH, 'a')
 
-<<<<<<< HEAD
         # chdir('%s' % self.__megaToolsDir)
 
         if self.__downSpeedLimit:
             cmd = 'start "" /B megacopy --__download -u %s -p %s --limit-speed %d --local "%s" --remote "%s"' % (username, password, self.__downSpeedLimit, localRoot, remoteRoot)
-=======
-        chdir('%s' % self.__megaToolsDir)
-
-        if self.downSpeedLimit:
-            cmd = 'start "" /B megacopy --__download -u %s -p %s --limit-speed %d --local "%s" --remote "%s"' % (username, password, self.downSpeedLimit, localRoot,remoteRoot)
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
         else:
             cmd = 'start "" /B megacopy --__download -u %s -p %s --local "%s" --remote "%s"' % (username, password, localRoot,remoteRoot)
 
         result = self.__lib.exec_cmd(command=cmd, workingDir=self.__megaToolsDir, noWindow=True, outputFile=self.__megaTools_log)
 
-<<<<<<< HEAD
         if result:
             logger.debug(' Success, downloadeded all files from account.')
             return True
         else:
             logger.debug(' Error, could not download all files from account!')
             return False
-=======
-        proc = Popen(cmd, stdout=logFile, stderr=PIPE, shell=True)
-        logger.debug(' Executing: %s \n' % (cmd))
-
-        # out, err = proc.communicate()
-        # proc.wait()
-        while not proc.poll():
-            err = proc.stderr.readline()
-
-            # logFile_stderr = open(LOGFILE_STDERR, 'a')
-
-            if err == '':
-                break
-            logFile.write('%s - %s: %s' % (username, password, err))
-            # logFile_stderr.close()
-
-            temp_logFile_stderr.write('%s - %s: %s' % (username, password, err))
-            # sleep(10)
-
-        #
-        # if self.__removeIncomplete:
-        #     self._remove_incomplete_files(TEMP_LOGFILE_PATH)
-
-        output = proc.communicate()[0]
-        exitCode = proc.returncode
-
-        # logFile_stderr.close()
-        # logFile_stdout.close()
-        temp_logFile_stderr.close()
-        logFile.close()
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
 
     def download_file(self, username, password, localFilePath, remoteFilePath):
         """
         Download a remote file from MEGA account.
 
-<<<<<<< HEAD
         Args:
             username (str): username of account to __download file from
             password (str): password of account to __download file from
             localFilePath (str): Location to __download file to.
             remoteFilePath (str): Location to __download file from.
-=======
-        :param username: username of account to __download file from
-        :type username: string
-        :param password: password of account to __download file from
-        :type password: string
-        :param localFilePath: Location to __download file to.
-        :type localFilePath: String.
-        :param remoteFilePath: Location to __download file from.
-        :type remoteFilePath: String.
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
 
         Returns:
             bool: whether successful download or not
@@ -177,20 +94,9 @@ class MegaTools_Lib(object):
 
         logger.debug(' MEGA downloading file from account "%s" - "%s" to "%s"' % (username, password, localFilePath))
 
-<<<<<<< HEAD
         cmd = 'start /B megaget -u %s -p %s --path "%s" "%s"' % (username, password, localFilePath, remoteFilePath)
         result = self.__lib.exec_cmd(command=cmd, workingDir=self.__megaToolsDir,
                                      noWindow=True, outputFile=self.__megaTools_log)
-=======
-        # chdir('%s' % self.__megaToolsDir)
-        cmd = 'start /B megaget -u %s -p %s --path "%s" "%s"' % (username, password, localFilePath, remoteFilePath)
-        # proc = Popen(cmd)
-        # proc = self._exec_cmd(command=cmd, workingDir=self.__megaToolsDir, noWindow=True)
-        proc = Popen(cmd, stdout=logFile, stderr=logFile)
-
-        while not proc.poll():
-            pass
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
 
         if result:
             logger.debug(' Successfully downloaded file.')
@@ -289,15 +195,7 @@ class MegaTools_Lib(object):
         logger = getLogger('MegaTools_Lib.get_account_used_space')
         logger.setLevel(self.__logLevel)
 
-<<<<<<< HEAD
         # chdir('%s' % self.__megaToolsDir)
-=======
-<<<<<<< HEAD
-        chdir('%s' % self.__megaToolsDir)
-=======
-        chdir('%s' % self.megaToolsDir)
->>>>>>> 94ed4e8ae070cc4ce48651224d63dbccaafc9544
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
 
         cmd = 'start /B megadf --free -h --gb -u %s -p %s' % (username, password)
         out, err = self.__lib.exec_cmd_and_return_output(command=cmd, workingDir=self.__megaToolsDir)
@@ -307,7 +205,7 @@ class MegaTools_Lib(object):
 
         if not out == '':
             freeSpace = out.rstrip()
-            # freeSpace = sub('\r', '', out)
+            freeSpace = sub('\r', '', out)
             logger.debug(' Success, could get account free space.')
             return freeSpace
         logger.debug(' Error, could NOT get account free space!')
@@ -326,17 +224,7 @@ class MegaTools_Lib(object):
         """
 
         logger = getLogger('MegaTools_Lib.get_account_used_space')
-<<<<<<< HEAD
         logger.setLevel(self.__logLevel)
-=======
-        logger.setLevel(self.logLevel)
-
-<<<<<<< HEAD
-        chdir('%s' % self.__megaToolsDir)
-=======
-        chdir('%s' % self.megaToolsDir)
->>>>>>> 94ed4e8ae070cc4ce48651224d63dbccaafc9544
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
 
         cmd = 'start /B megadf --used -h --gb -u %s -p %s' % (username, password)
         out, err = self.__lib.exec_cmd_and_return_output(command=cmd, workingDir=self.__megaToolsDir)
@@ -345,8 +233,7 @@ class MegaTools_Lib(object):
             logger.info(str(err))
 
         if not out == '':
-            usedSpace = out.rstrip()
-            # usedSpace = sub('\r', '', out)
+            usedSpace = sub('\r', '', out)
             logger.debug(' Success, could get account free space.')
             return usedSpace
         logger.debug(' Error, could NOT get account free space!')
@@ -374,8 +261,7 @@ class MegaTools_Lib(object):
             logger.info(str(err))
 
         if not out == '':
-            totalSpace = out.rstrip()
-            # totalSpace = sub('\r', '', out)
+            totalSpace = sub('\r', '', out)
             logger.debug(' Success, could get account total space.')
             return totalSpace
         logger.debug(' Error, could NOT get account total space!')
@@ -402,19 +288,11 @@ class MegaTools_Lib(object):
         remotePath = self.__lib.get_remote_path_from_local_path(localPath=localDirPath, localRoot=localRoot,
                                                                 remoteRoot=remoteRoot)
 
-<<<<<<< HEAD
         if remotePath:
-=======
-            chdir('%s' % self.__megaToolsDir)
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
 
             cmd = 'start /B megals -lR -u %s -p %s "%s"' % (username, password, remotePath)
             out, err = self.__lib.exec_cmd_and_return_output(command=cmd, workingDir=self.__megaToolsDir)
 
-<<<<<<< HEAD
-=======
-            out, err = self._exec_cmd_and_get_output(cmd, workingDir=self.__megaToolsDir)
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
             lines = out.split('\r\n')
             totalRemoteDirSize = 0
             for line in lines:
@@ -494,7 +372,6 @@ class MegaTools_Lib(object):
         """
         Get remote file modified date of equivalent local file path
 
-<<<<<<< HEAD
         Args:
             username (str): username for MEGA account
             password (str): password for MEGA account
@@ -514,14 +391,6 @@ class MegaTools_Lib(object):
         if remotePath:
             cmd = 'start /B megals -ln -u %s -p %s "%s"' % (username, password, remotePath)
             out, err = self.__lib.exec_cmd_and_return_output(cmd, workingDir=self.__megaToolsDir)
-=======
-            chdir('%s' % self.__megaToolsDir)
-
-            cmd = 'start /B megals -ln -u %s -p %s "%s"' % (username, password, remoteRoot + subPath)
-            # proc = Popen(cmd, stdout=PIPE, shell=True)
-            out, err = self._exec_cmd_and_get_output(cmd, workingDir=self.__megaToolsDir)
-            # (out, err) = proc.communicate()
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
             line_split = out.split()
 
             if len(line_split) > 2:
@@ -589,11 +458,7 @@ class MegaTools_Lib(object):
             remoteFileSize = self.get_remote_file_size(username=username, password=password, remotePath=remotePath)
             return remoteFileSize
 
-<<<<<<< HEAD
         return None
-=======
-            chdir('%s' % self.__megaToolsDir)
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
 
     def get_remote_file_paths_recursively(self, username, password, remotePath='/'):
         """
@@ -627,36 +492,6 @@ class MegaTools_Lib(object):
         logger.warning(str(err))
         return None
 
-<<<<<<< HEAD
-    def get_remote_files(self, username, password, remotePath='/Root'):
-        """
-        Get remote files list.
-
-        Args:
-            username (str): username of MEGA account.
-            password (str): password of MEGA account.
-            remotePath (str): root path to get remote files from.
-        Returns:
-            list of remote files in given remotePath.
-        """
-
-        cmd = 'megals -R -u %s -p %s "%s"' % (username, password, remotePath)
-
-        out, err = self._exec_cmd_and_get_output(command=cmd, workingDir=self.__megaToolsDir)
-        # proc = Popen(cmd, stdout=PIPE, shell=True)
-        #
-        # (out, err) = proc.communicate()
-        lines = out.split('\r\n')
-
-        remoteFiles = []
-        for line in lines:
-            if not line == '' and len(findall("\?", line)) == 0:
-                remoteFiles.append(line)
-
-        return remoteFiles
-
-=======
->>>>>>> 94ed4e8ae070cc4ce48651224d63dbccaafc9544
     def get_remote_subdir_names_only(self, username, password, remotePath):
         """
         Get remote sub directory names only.
@@ -691,34 +526,17 @@ class MegaTools_Lib(object):
         """
         Delete incomplete files from account.
 
-<<<<<<< HEAD
         Args:
             username (str): username for MEGA account
             password (str): password for MEGA account
             localRoot (str): Local path to __download file to
             remoteRoot (str): Remote path of file to __download
-=======
-        :param username: username for MEGA account
-        :type username: string
-        :param password: password for MEGA account
-        :type password: string
-        :param localRoot: Local path to __download file to
-        :type localRoot: string
-        :param remoteRoot: Remote path of file to __download
-        :type remoteRoot: string
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
 
         Returns:
         """
 
         logger = getLogger('MegaManager._delete_local_incomplete_files_from_account')
-<<<<<<< HEAD
         logger.setLevel(self.__logLevel)
-=======
-        logger.setLevel(self.logLevel)
-
-        chdir('%s' % self.__megaToolsDir)
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
 
         cmd = 'start /B megals -ln -u %s -p %s' % (username, password)
         out, err = self.__lib.exec_cmd_and_return_output(command=cmd, workingDir=self.__megaToolsDir)
@@ -763,42 +581,8 @@ class MegaTools_Lib(object):
             password (str): password of account to __upload to
             remoteFilePath (str): remote file path to remove
 
-<<<<<<< HEAD
         Returns:
             boolean: whether successful or not.
-=======
-        for line in lines:
-            line_split = line.split()
-            if len(line_split) > 2:
-                remoteFileSize = line_split[3]
-                if remoteFileSize.isdigit():
-                    line_split = line.split('/')
-                    if len(line_split) > 1:
-                        remoteFilePath = '/' + '/'.join(line_split[1:])
-                        if remoteRoot in remoteFilePath:
-                            remote_root = remoteRoot.replace('/', '\\')
-                            local_root = localRoot
-                            conv_remoteFilePath = remoteFilePath.replace('/', '\\')
-                            localFilePath = conv_remoteFilePath.replace(remote_root, local_root)
-                            if path.exists(localFilePath) and path.isfile(localFilePath):
-                                localFileSize = path.getsize(localFilePath)
-                                if localFileSize < int(remoteFileSize):
-                                    logger.debug(' File incomplete. Deleting file "%s"' % localFilePath)
-                                    try:
-                                        rename(localFilePath, localFilePath)
-                                        remove(localFilePath)
-                                    except OSError as e:
-                                        logger.debug(' Access-error on file "' + localFilePath + '"! \n' + str(e))
-
-    def remove_remote_file(self, username, password, remoteFilePath):
-        """
-        Remove remote file.
-
-        Args:
-            username (str): username of account to __upload to
-            password (str): password of account to __upload to
-            remoteFilePath (str): remote file path to remove
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
         """
 
         logger = getLogger('MegaTools_Lib.remove_remote_file')
@@ -808,7 +592,6 @@ class MegaTools_Lib(object):
 
         cmd = 'megarm -u %s -p %s "%s"' % (username, password, remoteFilePath)
 
-<<<<<<< HEAD
         result = self.__lib.exec_cmd(command=cmd, workingDir=self.__megaToolsDir)
 
         if result:
@@ -817,35 +600,15 @@ class MegaTools_Lib(object):
         else:
             logger.debug(' Error, could NOT remove remote file!')
             return False
-=======
-        out, err = self._exec_cmd(command=cmd, workingDir=self.__megaToolsDir)
-        # proc = Popen(cmd, stdout=logFile, stderr=logFile, shell=True)
-
-        # (out, err) = proc.communicate()
-        # lines = out.split('\r\n')
-        # logFile.close()
-
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
 
     def upload_local_dir(self, username, password, localDir, remoteDir):
         """
         Upload directory.
 
-<<<<<<< HEAD
             username (str): username of account to upload to
             password (str): password of account to upload to
             localDir (str): Local directory to upload
             remoteDir (str): Remote directory to upload to
-=======
-        :param username: username of account to __upload to
-        :type username: string
-        :param password: password of account to __upload to
-        :type password: string
-        :param localDir: Local directory to __upload
-        :type localDir: string
-        :param remoteDir: Remote directory to __upload to
-        :type remoteDir: string
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
 
         Returns:
             boolean: whether successful or not.
@@ -856,14 +619,8 @@ class MegaTools_Lib(object):
 
         logger.debug('%s - %s: Uploading files in directory "%s"' % (username, password, localDir))
 
-<<<<<<< HEAD
         if self.__upSpeedLimit:
             cmd = 'megacopy -u %s -p %s --limit-speed %d --local "%s" --remote "%s"' % (username, password, self.__upSpeedLimit, localDir, remoteDir)
-=======
-        chdir('%s' % self.__megaToolsDir)
-        if self.upSpeedLimit:
-            cmd = 'megacopy -u %s -p %s --limit-speed %d --local "%s" --remote "%s"' % (username, password, self.upSpeedLimit, localDir, remoteDir)
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
         else:
             cmd = 'megacopy -u %s -p %s --local "%s" --remote "%s"' % (username, password, localDir, remoteDir)
 
@@ -888,22 +645,11 @@ class MegaTools_Lib(object):
         """
         Upload all files to account.
 
-<<<<<<< HEAD
         Args:
             username (str): username of account to __upload to
             password (str): password of account to __upload to
             localRoot (str): Local root path of local account files to map with remote root.
             remoteRoot (str): Remote root path of remote accounts to map with local root.
-=======
-        :param username: username of account to __upload to
-        :type username: string
-        :param password: password of account to __upload to
-        :type password: string
-        :param localRoot: Local root path of local account files to map with remote root.
-        :type localRoot: String.
-        :param remoteRoot: Remote root path of remote accounts to map with local root.
-        :type remoteRoot: String.
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
 
         Returns:
             boolean: whether successful or not.
@@ -915,10 +661,6 @@ class MegaTools_Lib(object):
         logger.debug(' Starting uploading for %s - %s' % (username, password))
 
         localRoot_adj = sub('\\\\', '/', localRoot)
-<<<<<<< HEAD
-=======
-        chdir('%s' % self.__megaToolsDir)
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
 
         cmd = 'megals -ln -u %s -p %s "%s"' % (username, password, remoteRoot)
         out, err = self.__lib.exec_cmd_and_return_output(command=cmd, workingDir=self.__megaToolsDir, outputFile=self.__megaTools_log)

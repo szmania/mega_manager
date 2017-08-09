@@ -56,14 +56,6 @@ class FFMPEG_Lib(object):
     
         cmd = '"%s" -i "%s" -vf "scale=\'if(gte(iw,720), 720, iw)\':-2" -preset medium -threads 1 "%s"' % \
               (self.__ffmpegExePath, filePath, targetPath)
-
-        :param filePath: File path of video to __compressAll.
-        :type filePath: string
-        :param targetPath: File path of video to be compressed into.
-        :type targetPath: string
-    
-        :return: subprocess object
-        """
     
         logger = getLogger('__lib.compress_video_file')
         logger.setLevel(self.logLevel)
@@ -75,7 +67,6 @@ class FFMPEG_Lib(object):
         proc1 = self._exec_cmd(command=cmd, noWindow=True)
     
         return proc1
->>>>>>> b35cd581f1b922abdb239ce8e6e4edd74ffb48cd
 
         result = self.__lib.exec_cmd(command=cmd, noWindow=True, outputFile=self.__ffmpegLog)
 
