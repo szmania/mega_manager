@@ -482,14 +482,6 @@ class MegaManager(object):
                                                        filePath=self.__unableToCompressImagesFilePath)
 
 
-                    else:
-                        logger.debug(
-                            ' Error, image file previously processed. Moving on.  "%s"!' % local_filePath)
-                else:
-                    logger.debug(
-                        ' Error, image file does NOT exist locally. Moving on.  "%s"!' % local_filePath)
-
-
     def _find_video_files_to_compress(self, username, password, localRoot, remoteRoot):
         """
         Find video files to __compressAll.
