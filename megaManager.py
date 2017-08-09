@@ -450,23 +450,6 @@ class MegaManager(object):
 
                     newFilePath = local_filePath.rsplit(".", 1)[0] + '_NEW.mp4'
 
-
-                # if not line == '':
-                #     remote_type = self.__megaTools.get_file_type_from_megals_line_data(line=line)
-                #     if remote_type == '0':
-                #         remote_fileExt = self.__megaTools.get_file_extension_from_megals_line_data(line=line)
-                #         # remote_fileExt = path.splitext(split(':\d{2} ', line)[1])[1]
-                #         if remote_fileExt in self.__compressionImageExtensions:
-                #             remote_filePath = self.__megaTools.get_file_path_from_megals_line_data(line=line)
-                #             # remote_filePath = split(':\d{2} ', line)[1]
-                #             file_subPath = sub(remoteRoot, '', remote_filePath)
-                #             if file_subPath is not '':
-
-                    # local_filePath = localRoot_adj + file_subPath
-                    #
-                    # if (path.exists(local_filePath)):
-                    #     if (local_filePath not in self.__compressedImageFiles) and (
-                    #         local_filePath not in self.__unableToCompressImageFiles):
                     result = self.__compressImages_lib.compress_image_file(filePath=local_filePath)
                     if result:
                         compressPath_backup = local_filePath + '.compressimages-backup'
@@ -499,15 +482,13 @@ class MegaManager(object):
                                                        filePath=self.__unableToCompressImagesFilePath)
 
 
+                    else:
+                        logger.debug(
+                            ' Error, image file previously processed. Moving on.  "%s"!' % local_filePath)
                 else:
                     logger.debug(
-                        ' Error, image file previously processed. Moving on.  "%s"!' % local_filePath)
-            else:
-                logger.debug(
-                    ' Error, image file does NOT exist locally. Moving on.  "%s"!' % local_filePath)
+                        ' Error, image file does NOT exist locally. Moving on.  "%s"!' % local_filePath)
 
-                # else:
-                #     logger.debug(' Error, could not get remote file data.')
 
     def _find_video_files_to_compress(self, username, password, localRoot, remoteRoot):
         """
@@ -526,12 +507,6 @@ class MegaManager(object):
         logger.debug(' Finding video files to compress.')
 
         localRoot_adj = sub('\\\\', '/', localRoot)
-        # chdir('%s' % self.__megaToolsDir)
-
-        # cmd = 'megals -lR -u %s -p %s "%s"' % (username, password, self.__remoteRoot)
-        # proc = Popen(cmd, stdout=PIPE, shell=True)
-        #
-        # (out, err) = proc.communicate()
 
         lines = self.__megaTools.get_remote_file_data_recursively(username=username, password=password,
                                                                   remotePath=remoteRoot)
