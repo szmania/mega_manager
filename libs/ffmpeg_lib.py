@@ -42,7 +42,7 @@ class FFMPEG_Lib(object):
             subprocess object:
         """
     
-        logger = getLogger('__lib.compress_video_file')
+        logger = getLogger('ffmpeg.compress_video_file')
         logger.setLevel(self.__logLevel)
     
         logger.debug(' Compressing video file: "%s"' % filePath)

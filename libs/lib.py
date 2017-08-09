@@ -78,15 +78,15 @@ class Lib(object):
 
         if noWindow:
             CREATE_NO_WINDOW = 0x08000000
-            proc = call(command, stdout=outFile, stderr=outFile, creationflags=CREATE_NO_WINDOW)
+            exitCode = call(command, stdout=outFile, stderr=outFile, creationflags=CREATE_NO_WINDOW)
         else:
-            proc = call(command,  stdout=outFile, stderr=outFile)
+            exitCode = call(command,  stdout=outFile, stderr=outFile)
     
-        while not proc.poll():
-            pass
+        # while not proc.poll():
+        #     pass
 
-        outFile.close()
-        exitCode = proc.returnCode()
+        # outFile.close()
+        # exitCode = proc.returnCode()
 
         if exitCode == 0:
             logger.debug(' Successfully executed command "%s".' % command)
@@ -231,10 +231,10 @@ class Lib(object):
     def kill_running_processes_with_name(self, procName):
         """
         Kill processes with name.
-    
-        :param procName: Process name.
-        :type procName: String.
-    
+
+        Args:
+            procName (str): Process name.
+
         :return:
         """
     
@@ -242,16 +242,23 @@ class Lib(object):
         logger.setLevel(self.__logLevel)
     
         logger.info(' Killing processes with name "%s"' % procName)
-        # p = Popen(['ps', '-a'], stdout=PIPE)
-        p = Popen(['tasklist', '/v'], stdout=PIPE)
-        out, err = p.communicate()
-    
-        for line in out.splitlines():
-            if line.startswith(procName):
-                pid = int(line.split()[1])
-                kill(pid, SIGTERM)
-    
-        logger.debug(' Success, all "%s" process have been killed.' % procName)
+        try:
+            # p = Popen(['ps', '-a'], stdout=PIPE)
+            p = Popen(['tasklist', '/v'], stdout=PIPE)
+            out, err = p.communicate()
+
+
+            for line in out.splitlines():
+                if line.startswith(procName):
+                    pid = int(line.split()[1])
+                    kill(pid, SIGTERM)
+
+            logger.debug(' Success, all "%s" processes have been killed.' % procName)
+            return True
+
+        except Exception as e:
+            logger.error('Exception: {}'.format(e))
+            return False
 
     def load_file_as_list(self, filePath):
         """
@@ -266,10 +273,10 @@ class Lib(object):
         logger = getLogger('Lib.load_file_list_as_list')
         logger.setLevel(self.__logLevel)
 
-        logger.debug(' Loading %s filePath.' % filePath)
-
         items = []
         if path.isfile(filePath):
+            logger.debug(' Loading %s filePath.' % filePath)
+
             try:
                 data = load(file=filePath, allow_pickle=False)
                 items = data.f.list.tolist()

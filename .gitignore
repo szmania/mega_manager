@@ -134,9 +134,10 @@ tools/megaTools_1_1_98
 *.tmp
 *.log
 *.cfg
+*.cfg.old
 .idea/
 *.ini
-./data
+data/
 *.nzp
 ./tools/megaTools_1_1_98
 ./tools/ffmpeg

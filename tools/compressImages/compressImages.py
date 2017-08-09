@@ -123,7 +123,7 @@ class CompressImage(ProcessBase):
             newsize = getsize(filename)
 
             if newsize >= origsize:
-                print 'Cannot further __compressAll "' + filename + '".'
+                print 'Cannot further compress "' + filename + '".'
                 return False
 
             # Successful compression
