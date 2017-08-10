@@ -14,7 +14,7 @@ __author__ = 'szmania'
 
 SCRIPT_DIR = path.dirname(path.realpath(__file__))
 
-class SyncProfile(Account):
+class SyncProfile(object):
     def __init__(self, username, password, pathMappings, profileName=None, logLevel='DEBUG'):
         """
         Library for ffmpeg converter and encoder interaction.
@@ -27,7 +27,6 @@ class SyncProfile(Account):
             logLevel (str): Logging level setting ie: "DEBUG" or "WARN"
         """
 
-        Account.__init__(self, username=username, password=password, logLevel=logLevel)
 
         self.__profileName = profileName if profileName is not None else username
         self.__pathMappings = pathMappings
@@ -37,36 +36,37 @@ class SyncProfile(Account):
         self.__remote_usedSpace = None
 
         # self.__account = super(SyncProfile, self).__init__(self, username=username, password=password, logLevel=logLevel)
-        # # self.__account = super(self.__class__, self)
+        self.__account = Account(username=username, password=password, logLevel=logLevel)
+
         # pass
-    #
-    # @property
-    # def account(self):
-    #     """
-    #     Getter for MEGA profile account.
-    #
-    #     Returns:
-    #         Account: Returns MEGA profile account
-    #     """
-    #
-    #     logger = getLogger('SyncProfile.account')
-    #     logger.setLevel(self.__logLevel)
-    #
-    #     return self.__account
-    #
-    # @account.setter
-    # def account(self, value):
-    #     """
-    #     Setter for MEGA profile account.
-    #
-    #     Args:
-    #         value (str): value to set profile account to.
-    #     """
-    #
-    #     logger = getLogger('SyncProfile.account')
-    #     logger.setLevel(self.__logLevel)
-    #
-    #     self.__account = value
+
+    @property
+    def account(self):
+        """
+        Getter for MEGA profile account.
+
+        Returns:
+            Account: Returns MEGA profile account
+        """
+
+        logger = getLogger('SyncProfile.account')
+        logger.setLevel(self.__logLevel)
+
+        return self.__account
+
+    @account.setter
+    def account(self, value):
+        """
+        Setter for MEGA profile account.
+
+        Args:
+            value (str): value to set profile account to.
+        """
+
+        logger = getLogger('SyncProfile.account')
+        logger.setLevel(self.__logLevel)
+
+        self.__account = value
 
     @property
     def local_usedSpace(self):

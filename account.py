@@ -35,7 +35,7 @@ class Account(object):
         self.__lib = Lib(logLevel=logLevel)
 
     @property
-    def account_freeSpace(self):
+    def freeSpace(self):
         """
         Getter for MEGA account free space.
 
@@ -43,13 +43,13 @@ class Account(object):
             String: Returns MEGA account free space
         """
 
-        logger = getLogger('Account.account_freeSpace')
+        logger = getLogger('Account.freeSpace')
         logger.setLevel(self.__logLevel)
 
         return self.__freeSpace
 
-    @account_freeSpace.setter
-    def account_freeSpace(self, value):
+    @freeSpace.setter
+    def freeSpace(self, value):
         """
         Setter for MEGA account free space.
 
@@ -57,13 +57,13 @@ class Account(object):
             value (str): value to set account free space to.
         """
 
-        logger = getLogger('Account.account_freeSpace')
+        logger = getLogger('Account.freeSpace')
         logger.setLevel(self.__logLevel)
 
         self.__freeSpace = value
 
     @property
-    def account_totalSpace(self):
+    def totalSpace(self):
         """
         Getter for MEGA account total space.
 
@@ -71,13 +71,13 @@ class Account(object):
             String: Returns MEGA account total space
         """
 
-        logger = getLogger('Account.account_totalSpace')
+        logger = getLogger('Account.totalSpace')
         logger.setLevel(self.__logLevel)
 
         return self.__totalSpace
 
-    @account_totalSpace.setter
-    def account_totalSpace(self, value):
+    @totalSpace.setter
+    def totalSpace(self, value):
         """
         Setter for MEGA account free space.
 
@@ -85,14 +85,14 @@ class Account(object):
             value (str): value to set account total space to.
         """
 
-        logger = getLogger('Account.account_totalSpace')
+        logger = getLogger('Account.totalSpace')
         logger.setLevel(self.__logLevel)
 
         self.__totalSpace = value
 
 
     @property
-    def account_usedSpace(self):
+    def usedSpace(self):
         """
         Getter for MEGA account used space.
 
@@ -100,13 +100,13 @@ class Account(object):
             String: Returns MEGA account used space
         """
 
-        logger = getLogger('Account.account_usedSpace')
+        logger = getLogger('Account.usedSpace')
         logger.setLevel(self.__logLevel)
 
         return self.__usedSpace
 
-    @account_usedSpace.setter
-    def account_usedSpace(self, value):
+    @usedSpace.setter
+    def usedSpace(self, value):
         """
         Setter for MEGA account used space.
 
@@ -114,7 +114,7 @@ class Account(object):
             value (str): value to set account used space to.
         """
 
-        logger = getLogger('Account.account_usedSpace')
+        logger = getLogger('Account.usedSpace')
         logger.setLevel(self.__logLevel)
 
         self.__usedSpace = value

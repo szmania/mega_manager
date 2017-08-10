@@ -26,28 +26,31 @@ class Lib(object):
 
         self.__logLevel = logLevel
 
-    def dump_list_into_file(self, itemList, filePath):
+    def dump_set_into_file(self, itemSet, filePath):
         """
-        Dump list into file for each item on a new line.
-    
-        :param itemList: List to dump into file.
-        :type itemList: list
-        :param filePath: File to dump to.
-        :type filePath: string
-    
-        :return: boolean of whether successful or not
+        Dump set into file for each item on a new line.
+
+        Args:
+            itemSet (set): Set to dump into file.
+            filePath (str): File to dump to.
+
+        Returns:
+            Boolean: boolean of whether successful or not
         """
     
-        logger = getLogger('MegaManager_lib.dump_list_into_file')
+        logger = getLogger('MegaManager_lib.dump_set_into_file')
         logger.setLevel(self.__logLevel)
     
         logger.debug(' Dumping list into %s filePath.' % filePath)
 
+
         try:
-            npList = array(itemList)
+            npList = array(list(itemSet))
             savez_compressed(filePath, list=npList)
+            return True
         except Exception as e:
             logger.debug(' Exception: %s' % str(e))
+            return False
     
     def exec_cmd(self, command, workingDir=None, noWindow=False, outputFile=None):
         """
@@ -260,17 +263,18 @@ class Lib(object):
             logger.error('Exception: {}'.format(e))
             return False
 
-    def load_file_as_list(self, filePath):
+    def load_file_as_set(self, filePath):
         """
-        Load file as list splitting each line into a new item.
+        Load file as set splitting each line into a new item.
 
-        :param filePath: File to lead.
-        :type filePath: String.
+        Args:
+            filePath (str): File to lead.
 
-        :return: Lines in file as list.
+        Returns:
+            Lines in file as a set.
         """
 
-        logger = getLogger('Lib.load_file_list_as_list')
+        logger = getLogger('Lib.load_file_as_set')
         logger.setLevel(self.__logLevel)
 
         items = []
@@ -278,13 +282,21 @@ class Lib(object):
             logger.debug(' Loading %s filePath.' % filePath)
 
             try:
+                # with open(filePath, 'r') as f:
+                #     lines = f.read()
+                # words = set(lines.split(','))
                 data = load(file=filePath, allow_pickle=False)
                 items = data.f.list.tolist()
+                # count = 0
+                # for item in items:
+                #
+                #     items[count] = item.lstrip()
+                #     count+=1
 
             except Exception as e:
                 logger.debug(' Exception: %s' % str(e))
             finally:
-                return items
+                return set(items)
 
         else:
             logger.debug(' Error, filepath "%s" does NOT exist!' % filePath)

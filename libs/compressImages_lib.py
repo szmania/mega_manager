@@ -33,7 +33,7 @@ class CompressImages_Lib(object):
         Compress images file.
 
         Args:
-            filePath (str): File path of image to __compressAll.
+            filePath (str): File path of image to compress.
 
         Returns:
             Boolean: whether compression operation was successful or not.

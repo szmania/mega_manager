@@ -340,7 +340,7 @@ class MegaTools_Lib(object):
 
         return dirList
 
-    def get_remote_file_data_recursively(self, username, password, remotePath='/'):
+    def get_remote_file_data_recursively(self, username, password, remotePath='/', removeBlankLines=False):
         """
         Get all remote file data as list. This includes file path, modified date/time, file size, file type (file or dir),
 
@@ -348,8 +348,9 @@ class MegaTools_Lib(object):
             username (str): username of MEGA account.
             password (str): password of MEGA account.
             remotePath (str): root path to get remote files from.
+            removeBlankLines (bool): If set to true output list will not contain empty strings.
         Returns:
-            list of remote file data in given remotePath.
+            List: list of remote file data in given remotePath.
         """
 
         logger = getLogger('MegaTools_Lib.get_remote_file_data_recursively')
@@ -362,6 +363,8 @@ class MegaTools_Lib(object):
         if not err:
             if not out == '':
                 lines = out.split('\r\n')
+                if removeBlankLines:
+                    lines = list(filter(None, lines))  # fastest
                 logger.debug(' Success, could get remote file data recursievly.')
                 return lines
 

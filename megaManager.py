@@ -118,7 +118,7 @@ class MegaManager(object):
 
         for profile in self.__syncProfiles:
             for pathMapping in profile.pathMappings:
-                self._find_image_files_to_compress(username=profile.username, password=profile.password,
+                self._find_image_files_to_compress(username=profile.account.username, password=profile.account.password,
                                                    localRoot=pathMapping.localPath, remoteRoot=pathMapping.remotePath)
 
     def _all_profiles_upload(self):
@@ -147,7 +147,7 @@ class MegaManager(object):
 
         for profile in self.__syncProfiles:
             for pathMapping in profile.pathMappings:
-                self._find_video_files_to_compress(username=profile.username, password=profile.password,
+                self._find_video_files_to_compress(username=profile.account.username, password=profile.account.password,
                                                    localRoot=pathMapping.localPath, remoteRoot=pathMapping.remotePath)
 
     def _assign_attributes(self, **kwargs):
@@ -170,7 +170,7 @@ class MegaManager(object):
         logger = getLogger('MegaManager._create_profiles_data_file')
         logger.setLevel(self.__logLevel)
 
-        logger.debug(' Creating self.__megaAccountsOutputPath.txt file.')
+        logger.debug(' Creating MEGA accounts output file.')
 
         try:
             self.__accounts_details_dict = {}
@@ -271,7 +271,7 @@ class MegaManager(object):
         logger = getLogger('MegaManager._create_threads_removed_remote_file_deletion')
         logger.setLevel(self.__logLevel)
 
-        self.__removedRemoteFiles = self.__lib.load_file_as_list(filePath=self.__removedRemoteFilePath)
+        self.__removedRemoteFiles = self.__lib.load_file_as_set(filePath=self.__removedRemoteFilePath)
 
         logger.debug(' Creating thread to remove files remotely.')
 
@@ -292,8 +292,8 @@ class MegaManager(object):
 
         logger.debug(' Creating thread to compress local image files.')
 
-        self.__compressedImageFiles = self.__lib.load_file_as_list(filePath=self.__compressedImagesFilePath)
-        self.__unableToCompressImageFiles = self.__lib.load_file_as_list(filePath=self.__unableToCompressImagesFilePath)
+        self.__compressedImageFiles = self.__lib.load_file_as_set(filePath=self.__compressedImagesFilePath)
+        self.__unableToCompressImageFiles = self.__lib.load_file_as_set(filePath=self.__unableToCompressImagesFilePath)
 
         t_compress = Thread(target=self._all_profiles_image_compression, args=( ), name='thread_compressImages')
         self.__threads.append(t_compress)
@@ -309,8 +309,10 @@ class MegaManager(object):
 
         logger.debug(' Creating thread to compress local video files.')
 
-        self.__compressedVideoFiles = self.__lib.load_file_as_list(filePath=self.__compressedVideosFilePath)
-        self.__unableToCompressVideoFiles = self.__lib.load_file_as_list(filePath=self.__unableToCompressVideosFilePath)
+        self.__compressedVideoFiles = self.__lib.load_file_as_set(filePath=self.__compressedVideosFilePath)
+        # self.__compressedVideoFiles = self.__lib.load_file_as_set(filePath='C:\\Users\\PDitty\\Documents\\MEGA\\My_Mods\\Tools\\MEGA_Manager\\new_1.txt')
+
+        self.__unableToCompressVideoFiles = self.__lib.load_file_as_set(filePath=self.__unableToCompressVideosFilePath)
 
         t_compress = Thread(target=self._all_profiles_video_compression, args=( ), name='thread_compressVideos')
         self.__threads.append(t_compress)
@@ -343,11 +345,11 @@ class MegaManager(object):
                         break
 
                 if not higherDirRemoved:
-                    self.__removedRemoteFiles.append(filePath)
+                    self.__removedRemoteFiles.add(filePath)
                     self.__megaTools.remove_remote_file(username=username, password=password,
                                                         remoteFilePath=filePath)
-                    self.__lib.dump_list_into_file(itemList=self.__removedRemoteFiles,
-                                                   filePath=self.__removedRemoteFilePath)
+                    self.__lib.dump_set_into_file(itemSet=self.__removedRemoteFiles,
+                                                  filePath=self.__removedRemoteFilePath)
 
     def _export_accounts_details_dict(self):
         """
@@ -434,7 +436,7 @@ class MegaManager(object):
         # lines = out.split('\r\n')
 
         lines = self.__megaTools.get_remote_file_data_recursively(username=username, password=password,
-                                                                  remotePath=remoteRoot)
+                                                                  remotePath=remoteRoot, removeBlankLines=True)
 
         if lines:
             for line in lines:
@@ -448,8 +450,6 @@ class MegaManager(object):
                                 path.isfile(local_filePath) and (local_filePath not in self.__compressedImageFiles) \
                                 and (local_filePath not in self.__unableToCompressImageFiles):
 
-                    newFilePath = local_filePath.rsplit(".", 1)[0] + '_NEW.mp4'
-
                     result = self.__compressImages_lib.compress_image_file(filePath=local_filePath)
                     if result:
                         compressPath_backup = local_filePath + '.compressimages-backup'
@@ -462,24 +462,24 @@ class MegaManager(object):
                                 pass
 
                             self.compressedFiles = []
-                            self.compressedFiles.append(local_filePath)
-                            self.__lib.dump_list_into_file(itemList=self.__compressedImageFiles,
-                                                           filePath=self.__compressedImagesFilePath, )
+                            self.compressedFiles.add(local_filePath)
+                            self.__lib.dump_set_into_file(itemSet=self.__compressedImageFiles,
+                                                          filePath=self.__compressedImagesFilePath, )
 
                         else:
                             logger.debug(
                                 ' File cannot be compressed any further "%s"!' % local_filePath)
-                            self.__unableToCompressImageFiles.append(local_filePath)
-                            self.__lib.dump_list_into_file(
-                                itemList=self.__unableToCompressImageFiles,
+                            self.__unableToCompressImageFiles.add(local_filePath)
+                            self.__lib.dump_set_into_file(
+                                itemSet=self.__unableToCompressImageFiles,
                                 filePath=self.__unableToCompressImagesFilePath, )
 
                     else:
                         logger.debug(
                             ' Error, image file could not be compressed "%s"!' % local_filePath)
-                        self.__unableToCompressImageFiles.append(local_filePath)
-                        self.__lib.dump_list_into_file(itemList=self.__unableToCompressImageFiles,
-                                                       filePath=self.__unableToCompressImagesFilePath)
+                        self.__unableToCompressImageFiles.add(local_filePath)
+                        self.__lib.dump_set_into_file(itemSet=self.__unableToCompressImageFiles,
+                                                      filePath=self.__unableToCompressImagesFilePath)
 
 
     def _find_video_files_to_compress(self, username, password, localRoot, remoteRoot):
@@ -501,7 +501,7 @@ class MegaManager(object):
         localRoot_adj = sub('\\\\', '/', localRoot)
 
         lines = self.__megaTools.get_remote_file_data_recursively(username=username, password=password,
-                                                                  remotePath=remoteRoot)
+                                                                  remotePath=remoteRoot, removeBlankLines=True)
 
         if lines:
             for line in lines:
@@ -510,25 +510,26 @@ class MegaManager(object):
                 remote_filePath = self.__megaTools.get_file_path_from_megals_line_data(line=line)
                 file_subPath = sub(remoteRoot, '', remote_filePath)
                 local_filePath = localRoot_adj + file_subPath
-
+                # if local_filePath not in self.__compressedVideoFiles:
+                #     pass
                 # remote_type = line.split()[2]
                 if remote_type == '0' and remote_fileExt in self.__compressionVideoExtensions and \
                                 path.isfile(local_filePath) and (local_filePath not in self.__compressedVideoFiles) \
                                 and (local_filePath not in self.__unableToCompressVideoFiles):
 
-                    newFilePath = local_filePath.rsplit(".", 1)[0] + '_NEW.mp4'
+                    tempFilePath = local_filePath.rsplit(".", 1)[0] + '_NEW.mp4'
 
-                    if path.exists(newFilePath):
+                    if path.exists(tempFilePath):
                         for retry in range(100):
                             try:
-                                remove(newFilePath)
+                                remove(tempFilePath)
                                 break
                             except:
                                 logger.debug(" Remove failed, retrying...")
                     result = self.__ffmpeg.compress_video_file(local_filePath,
-                                                               targetPath=newFilePath, )
+                                                               targetPath=tempFilePath, )
 
-                    if result == True and path.exists(newFilePath):
+                    if result == True and path.exists(tempFilePath):
                         for retry in range(100):
                             try:
                                 remove(local_filePath)
@@ -537,24 +538,29 @@ class MegaManager(object):
                                 logger.debug(" Remove failed, retrying...")
 
                         for retry in range(100):
+                            newFilePath = sub('_NEW', '', tempFilePath)
                             try:
-                                rename(newFilePath, sub('_NEW', '', newFilePath))
+                                rename(tempFilePath, newFilePath)
                                 break
                             except:
                                 logger.debug(" Rename failed, retrying...")
 
                         logger.debug(' Video file compressed successfully "%s" into "%s"!' % (
                         local_filePath, newFilePath))
-                        self.__compressedVideoFiles.append(newFilePath)
-                        self.__lib.dump_list_into_file(itemList=self.__compressedVideoFiles,
-                                                       filePath=COMPRESSED_VIDEOS_FILE, )
+                        self.__compressedVideoFiles.add(newFilePath)
+                        self.__lib.dump_set_into_file(itemSet=self.__compressedVideoFiles,
+                                                      filePath=COMPRESSED_VIDEOS_FILE, )
 
-                    elif path.exists(newFilePath):
-                        remove(newFilePath)
+                    elif path.exists(tempFilePath):
+                        remove(tempFilePath)
 
                     else:
                         logger.debug(
                             ' Error, video file could not be compressed "%s"!' % local_filePath)
+                        self.__unableToCompressVideoFiles.add(local_filePath)
+                        self.__lib.dump_set_into_file(itemSet=self.__unableToCompressVideoFiles,
+                                                      filePath=UNABLE_TO_COMPRESS_VIDEOS_FILE, )
+
 
     def _get_accounts_user_pass(self, file):
         """
@@ -604,7 +610,7 @@ class MegaManager(object):
             profile (SyncProfile): Profile to get data for.
         """
 
-        profile = self._update_account_remote_details(profile=profile)
+        profile = self._update_account_remote_details(account=profile.account)
 
     def _get_remote_files_that_dont_exist_locally(self, username, password):
         """
@@ -726,12 +732,12 @@ class MegaManager(object):
         """
 
         try:
+            self.__lib = Lib(logLevel=self.__logLevel)
             self._setup_logger(self.__megaManager_logFilePath)
             self._import_config_file_data()
 
             self.__compressImages_lib = CompressImages_Lib(logLevel=self.__logLevel)
             self.__ffmpeg = FFMPEG_Lib(ffmpegExePath=self.__ffmpegExePath, logLevel=self.__logLevel)
-            self.__lib = Lib(logLevel=self.__logLevel)
             self.__megaTools = MegaTools_Lib(megaToolsDir=self.__megaToolsDir, downSpeedLimit=self.__downSpeed,
                                              upSpeedLimit=self.__upSpeed, logLevel=self.__logLevel)
 
@@ -781,18 +787,18 @@ class MegaManager(object):
         logger.info(' Tearing down megaManager!')
         try:
             if self.__removeRemote:
-                self.__lib.dump_list_into_file(itemList=self.__removedRemoteFiles,
-                                               filePath=self.__removedRemoteFilePath, )
+                self.__lib.dump_set_into_file(itemSet=self.__removedRemoteFiles,
+                                              filePath=self.__removedRemoteFilePath, )
             if self.__compressImages:
-                self.__lib.dump_list_into_file(itemList=self.__compressedImageFiles,
-                                               filePath=self.__compressedImagesFilePath, )
-                self.__lib.dump_list_into_file(itemList=self.__unableToCompressImageFiles,
-                                               filePath=self.__unableToCompressImagesFilePath)
+                self.__lib.dump_set_into_file(itemSet=self.__compressedImageFiles,
+                                              filePath=self.__compressedImagesFilePath, )
+                self.__lib.dump_set_into_file(itemSet=self.__unableToCompressImageFiles,
+                                              filePath=self.__unableToCompressImagesFilePath)
             if self.__compressVideos:
-                self.__lib.dump_list_into_file(itemList=self.__compressedVideoFiles,
-                                               filePath=self.__compressedVideosFilePath, )
-                self.__lib.dump_list_into_file(itemList=self.__unableToCompressVideoFiles,
-                                               filePath=self.__unableToCompressVideosFilePath)
+                self.__lib.dump_set_into_file(itemSet=self.__compressedVideoFiles,
+                                              filePath=self.__compressedVideosFilePath, )
+                self.__lib.dump_set_into_file(itemSet=self.__unableToCompressVideoFiles,
+                                              filePath=self.__unableToCompressVideosFilePath)
 
             self.__lib.kill_running_processes_with_name('megacopy.exe')
             self.__lib.kill_running_processes_with_name('megals.exe')
@@ -803,28 +809,28 @@ class MegaManager(object):
             logger.debug(' Exception: %s' % str(e))
             pass
 
-    def _update_account_remote_details(self, profile):
+    def _update_account_remote_details(self, account):
         """
-        Gather data for profile (remote used space, remote free space, remote total space, etc...).
+        Gather data for account (remote used space, remote free space, remote total space, etc...).
 
         Args:
-            profile (SyncProfile): Account object to gather data for.
+            account (Account): Account object to gather data for.
 
         Returns:
-            Profile: profile object with remote data updated
+            Account: account object with remote data updated
         """
 
         logger = getLogger('MegaManager._update_account_remote_details')
         logger.setLevel(self.__logLevel)
 
-        username = profile.username
-        password = profile.password
+        username = account.username
+        password = account.password
 
-        profile.account_totalSpace = self.__megaTools.get_account_total_space(username=username, password=password)
+        account.totalSpace = self.__megaTools.get_account_total_space(username=username, password=password)
 
-        profile.account_freeSpace = self.__megaTools.get_account_free_space(username=username, password=password)
+        account.freeSpace = self.__megaTools.get_account_free_space(username=username, password=password)
 
-        profile.account_usedSpace = self.__megaTools.get_account_used_space(username=username, password=password)
+        account.usedSpace = self.__megaTools.get_account_used_space(username=username, password=password)
         # accountDetails.append('REMOTE SIZE: ' + usedSpace)
         #
         # subDirs = self.__megaTools.get_remote_subdir_names_only(username=username, password=password, remotePath=self.__remoteRoot)
@@ -864,7 +870,7 @@ class MegaManager(object):
         #
         #     self.__accounts_details_dict[username] = accountDetails
 
-        return profile
+        return account
 
     def _update_profile_remote_details(self, profile):
         """
@@ -949,9 +955,10 @@ class MegaManager(object):
         """
 
         logger = getLogger('MegaManager.run')
+        hi = self.__logLevel
         logger.setLevel(self.__logLevel)
 
-        logger.debug(' Running megaManager.')
+        logger.debug(' Running MEGA Manager.')
 
         try:
 
