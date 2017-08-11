@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/MEGA_Manager.iml" filepath="$PROJECT_DIR$/.idea/MEGA_Manager.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../General/Mirobo/.idea/Mirobo.iml" filepath="$PROJECT_DIR$/../../General/Mirobo/.idea/Mirobo.iml" />
     </modules>
   </component>
 </project>
