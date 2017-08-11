@@ -124,8 +124,9 @@ tools/megaTools_1_1_98
 *.old
 .idea/
 *.ini
-megamanager/data/
+./data
+data/
 *.nzp
-megamanager/tools/megaTools_1_1_98
-megamanager/tools/ffmpeg
+./tools/megaTools_1_1_98
+./tools/ffmpeg
 
