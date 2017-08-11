@@ -1,6 +1,6 @@
 
 from argparse import ArgumentParser
-from megamanager import MegaManager
+from megaManager import MegaManager
 
 def get_args():
     """
