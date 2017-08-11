@@ -4,12 +4,11 @@
 # Initial Creation.
 ###
 
-from logging import getLogger
 from .lib import Lib
+from logging import getLogger
 from os import chdir, path, remove, rename
 from re import findall, split, sub
 from random import randint
-from subprocess import PIPE, Popen
 from tempfile import gettempdir
 
 __author__ = 'szmania'

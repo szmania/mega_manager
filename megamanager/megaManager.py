@@ -13,7 +13,6 @@ from logging import DEBUG, getLogger, FileHandler, Formatter, StreamHandler
 from libs import CompressImages_Lib, FFMPEG_Lib, Lib, MegaTools_Lib
 from os import chdir, getpid, path, remove, rename, walk
 from pathMapping import PathMapping
-from psutil import IDLE_PRIORITY_CLASS, Process
 from random import randint
 from re import findall, split, sub
 from shutil import copyfile
@@ -27,7 +26,7 @@ from time import time
 __author__ = 'szmania'
 
 
-MEGAMANAGER_CONFIG = 'megaManager.cfg'
+# MEGAMANAGER_CONFIG = 'megaManager.cfg'
 
 MEGA_ACCOUNTS_DATA = "megaAccounts_DATA.txt"
 MEGATOOLS_PATH = ''
@@ -71,7 +70,7 @@ class MegaManager(object):
         self.__compressedVideosFilePath = COMPRESSED_VIDEOS_FILE
         self.__compressionImageExtensions = COMPRESSION_IMAGE_EXTENSIONS
         self.__compressionVideoExtensions = COMPRESSION_VIDEO_EXTENSIONS
-        self.__megaManager_configPath = MEGAMANAGER_CONFIG
+        # self.__megaManager_configPath = MEGAMANAGER_CONFIG
         self.__megaManager_logFilePath = MEGAMANAGER_LOGFILEPATH
         self.__removedRemoteFilePath = REMOVED_REMOTE_FILES
         self.__unableToCompressImagesFilePath = UNABLE_TO_COMPRESS_IMAGES_FILE
@@ -383,7 +382,7 @@ class MegaManager(object):
 
         logger.debug(' Exporting config data to MEGA Manager config file.')
         try:
-            with open(self.__megaManager_configPath, "w") as outs:
+            with open(self.__configPath, "w") as outs:
                 outs.write('MEGATOOLS_DIR=%s' % str(self.__megaToolsDir))
                 outs.write('FFMPEG_EXE_PATH=%s' % str(self.__ffmpegExePath))
                 outs.write('MEGA_ACCOUNTS=%s' % str(self.__megaAccountsPath))
@@ -652,9 +651,9 @@ class MegaManager(object):
         logger = getLogger('MegaManager._import_config_file_data')
         logger.setLevel(self.__logLevel)
 
-        logger.debug(' Loading megaManager.cfg file.')
+        logger.debug(' Loading MEGA Manager config file.')
 
-        with open(self.__megaManager_configPath, "r") as ins:
+        with open(self.__configPath, "r") as ins:
             line = ins.readline()
             while line:
                 if line.startswith('MEGATOOLS_DIR='):

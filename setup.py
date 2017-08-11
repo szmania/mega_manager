@@ -21,11 +21,14 @@ setup(
         'Programming Language :: Python :: 2',
     ],
 
-    keywords='megamanager', 'mega', 'cloud', 'mega.co.nz',
+    keywords=['megamanager', 'mega', 'mega.co.nz', 'mega.nz', 'cloud'
+              ],
 
     packages=["megamanager"],
 
-    install_requires=['construct', 'click', 'cryptography', 'pretty_cron', 'typing'],
+    install_requires=['logging', 'os', 'numpy', 'random', 're', 'shutil',
+                      'signal', 'subprocess', 'tempfile', 'threading', 'time'
+                      ],
     entry_points={
         'console_scripts': [
             'megamanager = megamanager.__main__:main',

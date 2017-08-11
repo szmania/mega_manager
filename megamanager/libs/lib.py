@@ -43,7 +43,6 @@ class Lib(object):
     
         logger.debug(' Dumping list into %s filePath.' % filePath)
 
-
         try:
             npList = array(list(itemSet))
             savez_compressed(filePath, list=npList)
