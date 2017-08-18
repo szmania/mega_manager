@@ -54,6 +54,10 @@ Remove incomplete local files that were not downloaded completely.
 
 If set remote files that have no corresponding local file will be removed.
 
+`--sync`
+
+If true, local and remote files for accoutns will be synced. Equivalent to using arguments "--download", "--removeLocal", "--removeRemote" and "--upload" all at once.
+
 `--upload`
 
 If set files will be uploaded to MEGA account.
