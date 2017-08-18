@@ -30,7 +30,7 @@ Compresses all images in local account locations.
 
 Compresses all videos in local account locations.
 
-`--configPath`
+`--configPath <path>`
 
 Set MEGA Manager config file location. Default: "megamanager/megaManager.cfg".
 
@@ -40,7 +40,28 @@ Download from MEGA account remote locations to corresponding local locations.
 
 `--downSpeed <int>`
 
-Set total down speed limit in Kb.
+Set total download speed limit in Kb.
+
+`--log <loglevel>`
+
+Set log level. ie: "INFO", "WARN", "DEBUG", etc... Default: "INFO".
+
+`--removeIncomplete`
+
+Remove incomplete local files that were not downloaded completely.
+
+`--removeRemote`
+
+If set remote files that have no corresponding local file will be removed.
+
+`--upload`
+
+If set files will be uploaded to MEGA account.
+
+`--uppeed <int>`
+
+Set total upload speed limit in Kb.
+
 
 ## Examples
 
