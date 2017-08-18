@@ -58,7 +58,7 @@ If set remote files that have no corresponding local file will be removed.
 
 If set files will be uploaded to MEGA account.
 
-`--uppeed <int>`
+`--upSpeed <int>`
 
 Set total upload speed limit in Kb.
 
