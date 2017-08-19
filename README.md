@@ -18,19 +18,19 @@ MEGA makes secure cloud storage simple. Create an account and get 50 GB free on 
 
 ## Usage
 ### Arguments
-`--compressAll`
+`--compress`
 
 Compresses all images AND video files in local account locations.
 
-`--compressImages`
+`--compress-images`
 
 Compresses all images in local account locations.
 
-`--compressVideos`
+`--compress-videos`
 
 Compresses all videos in local account locations.
 
-`--configPath <path>`
+`--config <path>`
 
 Set MEGA Manager config file location. Default: "megamanager/megaManager.cfg".
 
@@ -38,7 +38,7 @@ Set MEGA Manager config file location. Default: "megamanager/megaManager.cfg".
 
 Download from MEGA account remote locations to corresponding local locations.
 
-`--downSpeed <int>`
+`--down-speed <int>`
 
 Set total download speed limit in Kb.
 
@@ -46,11 +46,15 @@ Set total download speed limit in Kb.
 
 Set log level. ie: "INFO", "WARN", "DEBUG", etc... Default: "INFO".
 
-`--removeIncomplete`
+`--output-data`
+
+This will output all profile/account data to standard output.
+
+`--remove-incomplete`
 
 Remove incomplete local files that were not downloaded completely.
 
-`--removeRemote`
+`--remove-remote`
 
 If set remote files that have no corresponding local file will be removed.
 
@@ -62,7 +66,7 @@ If true, local and remote files for accoutns will be synced. Equivalent to using
 
 If set files will be uploaded to MEGA account.
 
-`--upSpeed <int>`
+`--up-speed <int>`
 
 Set total upload speed limit in Kb.
 
