@@ -1,7 +1,7 @@
 # MEGA Manager
 Cloud syncing manager for multiple <a href="https://mega.nz/">MEGA</a> cloud storage accounts with syncing, data gathering, compresssion and optimization capabilities. 
 
-MEGA Manager allows MEGA users to manage and maintain multiple MEGA accounts all at one place! MEGA Manager is the only app that allows syncing capabilities on multiple MEGA accounts. Included in MEGA Manager are in-depth syncing capabilities, file optimization and compression, remote and local account data output, Command Line Interface, and the ability to sync multiple remote locations to local locations in the same account.
+MEGA Manager allows MEGA users to manage and maintain multiple MEGA accounts all in one place! MEGA Manager is the only app that allows syncing capabilities on multiple MEGA accounts. Included in MEGA Manager are in-depth syncing capabilities, file optimization and compression, remote and local account data output, a Command Line Interface, and the ability to sync multiple remote locations to multiple local locations in one account.
 
 * Allows users to manage multiple MEGA accounts all in one place
 * Syncing capabilites that allows for syncing several remote and local file locations in the same account
