@@ -74,6 +74,20 @@ Set total upload speed limit in Kb.
 
 ### Examples
 
+Calling the package directly will suffice. Otherwise one could call "megamanger\__main__.py"
+
+`megamanager --upload --up-speed 500`
+
+Upload files AND limit total upload speed to 500kb.
+
+`megamanager\__main__.py --sync --down-speed 750`
+
+Sync files AND limit total download speed to 750kb.
+
+`megamanager --remote-outdated --config "dir\megamanager.cfg"`
+
+Set config file to be "dir\megamanger.cfg" AND remove outdated local and remote files
+
 
 
 
