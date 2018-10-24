@@ -922,9 +922,6 @@ class MegaManager(object):
         logger = getLogger('MegaManager.remove_outdated_files')
         logger.setLevel(self.__log_level)
 
-        # cmd = 'start /B megals -ln -u %s -p %s' % (username, password)
-        # out, err = self.__lib.exec_cmd_and_return_output(command=cmd, workingDir=self.__mega_tools_dir)
-
         try:
             lines = self.__mega_tools.get_remote_file_data_recursively(username=username, password=password,
                                                                        remotePath=remoteRoot, removeBlankLines=True)
@@ -933,12 +930,6 @@ class MegaManager(object):
                 for line in lines:
                     remoteFileType = self.__mega_tools.get_file_type_from_megals_line_data(line=line)
 
-            # for remoteFilePath in remoteFilePaths:
-            #     remoteFileSize = self.__mega_tools.get_remote_file_size(username=username, password=password, remote_path=remoteFilePath)
-            #     remoteFileModifiedDate = self.__mega_tools.get_remote_file_modified_date(username=username,
-            #                                                                             password=password,
-            #                                                                             remote_path=remoteFilePath)
-            #
                     if remoteFileType == '0':
                         remoteFilePath = self.__mega_tools.get_file_path_from_megals_line_data(line=line)
                         remoteFileSize = self.__mega_tools.get_file_size_from_megals_line_data(line=line)
@@ -994,12 +985,9 @@ class MegaManager(object):
         logger = getLogger('MegaManager._remove_outdated_local_remote_files')
         logger.setLevel(self.__log_level)
 
-
-        # for profile in self.__sync_profiles:
         try:
             profileName = profile.profile_name
             logger.debug(' Removing outdated files for {}'.format(profileName))
-
             username = profile.account.username
             password = profile.account.password
 
@@ -1007,11 +995,6 @@ class MegaManager(object):
                 localPath = pathMapping.local_path
                 remotePath = pathMapping.remote_path
                 self._remove_outdated_files(username=username, password=password, localRoot=localPath, remoteRoot=remotePath)
-                # t_removeOutdatedFiles = Thread(target=self._remove_outdated_files, args=(
-                #     username, password, local_path, remote_path,),
-                #                                  name='thread_removeOutdatedFiles_%s' % profile_name)
-                # self.__threads.append(t_removeOutdatedFiles)
-                # t_removeOutdatedFiles.start()
         except Exception as e:
             logger.error('Exception: {}'.format(e))
 

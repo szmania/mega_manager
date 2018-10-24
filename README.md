@@ -50,9 +50,9 @@ Set log level. ie: "INFO", "WARN", "DEBUG", etc... Default: "INFO".
 
 This will output all profile/account data to standard output.
 
-`--remove-outdated`
+`--remove-oldest-file-version`
 
-Remove outdated local and remote files.
+This will remove outdated files locally or remotely that are older than their local/remote counterpart (syncing action).
 
 `--remove-remote`
 
@@ -84,7 +84,7 @@ Upload files AND limit total upload speed to 500kb.
 
 Sync files AND limit total download speed to 750kb.
 
-`megamanager --remote-outdated --config "dir\megamanager.cfg"`
+`megamanager --remove-oldest-file-version --config "dir\megamanager.cfg"`
 
 Set config file to be "dir\megamanger.cfg" AND remove outdated local and remote files
 

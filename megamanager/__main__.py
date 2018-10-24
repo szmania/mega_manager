@@ -42,8 +42,9 @@ def get_args():
     parser.add_argument('--output-data', dest='output_profile_data', action='store_true', default=False,
                         help='If true, this will output all profile data to standard output.')
 
-    parser.add_argument('--remove-outdated', dest='remove_outdated', action='store_true', default=False,
-                        help='If true, this will remove outdated files locally and remotely.')
+    parser.add_argument('--remove-oldest-file-version', dest='remove_oldest_file_version', action='store_true', default=False,
+                        help='If true, this will remove outdated files locally or remotely that are older than their '
+                             'local/remote counterpart (syncing action).')
 
     parser.add_argument('--remove-remote', dest='remove_remote', action='store_true', default=False,
                         help='If true, this will allow for remote files to be removed if no corresponding '
