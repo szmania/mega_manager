@@ -1,6 +1,12 @@
 
 from argparse import ArgumentParser
-from megaManager import MegaManager
+from mega_manager import MegaManager
+from os import path
+
+
+HOME_DIRECTORY = path.expanduser("~\\")
+MEGA_MANAGER_CONFIG_DIR = HOME_DIRECTORY + ".mega_manager"
+MEGA_MANAGER_CONFIG_FILE_PATH = MEGA_MANAGER_CONFIG_DIR + "\\mega_manager.cfg"
 
 def get_args():
     """
@@ -12,38 +18,47 @@ def get_args():
 
     parser = ArgumentParser(description='MEGA Manager is a MEGA cloud storage management and optimization application.')
 
-    parser.add_argument('--compressAll', dest='compressAll', action='store_true', default=False,
-                        help='If true, this will compressAll local image and video files.')
+    parser.add_argument('--compress', dest='compress_all', action='store_true', default=False,
+                        help='If true, this will compress local image and video files.')
 
-    parser.add_argument('--compressImages', dest='compressImages', action='store_true', default=False,
-                        help='If true, this will compressAll local image files.')
+    parser.add_argument('--compress-images', dest='compress_images', action='store_true', default=False,
+                        help='If true, this will compress local image files.')
 
-    parser.add_argument('--compressVideos', dest='compressVideos', action='store_true', default=False,
-                        help='If true, this will __compressAll local video files.')
+    parser.add_argument('--compress-videos', dest='compress_videos', action='store_true', default=False,
+                        help='If true, this will compress local video files.')
 
-    parser.add_argument('--configPath', dest='configPath', default='megamanager/megaManager.cfg',
-                        help='Set MEGA Manager config file location. Default: "megamanager/megaManager.cfg"')
+    parser.add_argument('--config', dest='config_path', default=MEGA_MANAGER_CONFIG_FILE_PATH,
+                        help='Set MEGA Manager config file location. Default: "{}"'.format(MEGA_MANAGER_CONFIG_FILE_PATH))
 
     parser.add_argument('--download', dest='download', action='store_true', default=False,
                         help='If true, items will be downloaded from MEGA')
 
-    parser.add_argument('--downSpeed', dest='downSpeed', type=int, default=None,
-                        help='Total download speed limit.')
+    parser.add_argument('--down-speed', dest='down_speed', type=int, default=None,
+                        help='Total download speed limit in kilobytes.')
 
-    parser.add_argument('--log', dest='logLevel', default='INFO',
+    parser.add_argument('--log', dest='log_level', default='INFO',
                         help='Set logging level')
 
-    parser.add_argument('--removeIncomplete', dest='removeIncomplete', action='store_true', default=False,
-                        help='If true, this will allow for local downloaded files that are incomplete to be removed.')
+    parser.add_argument('--output-data', dest='output_profile_data', action='store_true', default=False,
+                        help='If true, this will output all profile data to standard output.')
 
-    parser.add_argument('--removeRemote', dest='removeRemote', action='store_true', default=False,
-                        help='If true, this will allow for remote files to be removed.')
+    parser.add_argument('--remove-outdated', dest='remove_outdated', action='store_true', default=False,
+                        help='If true, this will remove outdated files locally and remotely.')
+
+    parser.add_argument('--remove-remote', dest='remove_remote', action='store_true', default=False,
+                        help='If true, this will allow for remote files to be removed if no corresponding '
+                             'local file exists.')
+
+    parser.add_argument('--sync', dest='sync', action='store_true', default=False,
+                        help='If true, local and remote files for accoutns will be synced. Equivalent to '
+                             'using arguments "--download", "--removeLocal", "--removeRemote" and "--upload" '
+                             'all at once.')
 
     parser.add_argument('--upload', dest='upload', action='store_true', default=False,
                         help='If true, items will be uploaded to MEGA')
 
-    parser.add_argument('--upSpeed', dest='upSpeed', type=int, default=None,
-                        help='Total upload speed limit.')
+    parser.add_argument('--up-speed', dest='up_speed', type=int, default=None,
+                        help='Total upload speed limit in kilobytes.')
 
     args = parser.parse_args()
     return args.__dict__

@@ -1,5 +1,5 @@
 from .account import Account
-from .megaManager import MegaManager
-from .pathMapping import PathMapping
+from .mega_manager import MegaManager
+from .path_mapping import PathMapping
 from .syncprofile import SyncProfile
 from .version import *

@@ -26,7 +26,7 @@ class Account(object):
 
         self.__username = username
         self.__password = password
-        self.__logLevel = logLevel
+        self.__log_level = logLevel
         
         self.__freeSpace = None
         self.__totalSpace = None
@@ -44,7 +44,7 @@ class Account(object):
         """
 
         logger = getLogger('Account.freeSpace')
-        logger.setLevel(self.__logLevel)
+        logger.setLevel(self.__log_level)
 
         return self.__freeSpace
 
@@ -58,7 +58,7 @@ class Account(object):
         """
 
         logger = getLogger('Account.freeSpace')
-        logger.setLevel(self.__logLevel)
+        logger.setLevel(self.__log_level)
 
         self.__freeSpace = value
 
@@ -72,7 +72,7 @@ class Account(object):
         """
 
         logger = getLogger('Account.totalSpace')
-        logger.setLevel(self.__logLevel)
+        logger.setLevel(self.__log_level)
 
         return self.__totalSpace
 
@@ -86,7 +86,7 @@ class Account(object):
         """
 
         logger = getLogger('Account.totalSpace')
-        logger.setLevel(self.__logLevel)
+        logger.setLevel(self.__log_level)
 
         self.__totalSpace = value
 
@@ -101,7 +101,7 @@ class Account(object):
         """
 
         logger = getLogger('Account.usedSpace')
-        logger.setLevel(self.__logLevel)
+        logger.setLevel(self.__log_level)
 
         return self.__usedSpace
 
@@ -115,7 +115,7 @@ class Account(object):
         """
 
         logger = getLogger('Account.usedSpace')
-        logger.setLevel(self.__logLevel)
+        logger.setLevel(self.__log_level)
 
         self.__usedSpace = value
 
@@ -129,7 +129,7 @@ class Account(object):
         """
 
         logger = getLogger('Account.password')
-        logger.setLevel(self.__logLevel)
+        logger.setLevel(self.__log_level)
 
         return self.__password
 
@@ -143,7 +143,7 @@ class Account(object):
         """
 
         logger = getLogger('Account.password')
-        logger.setLevel(self.__logLevel)
+        logger.setLevel(self.__log_level)
 
         self.__password = value
 
@@ -157,7 +157,7 @@ class Account(object):
         """
 
         logger = getLogger('Account.username')
-        logger.setLevel(self.__logLevel)
+        logger.setLevel(self.__log_level)
 
         return self.__username
 
@@ -171,7 +171,7 @@ class Account(object):
         """
 
         logger = getLogger('Account.username')
-        logger.setLevel(self.__logLevel)
+        logger.setLevel(self.__log_level)
 
         self.__username = value
 
