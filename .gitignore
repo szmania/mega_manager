@@ -116,7 +116,7 @@ $ szmania
 *.npz
 *.old
 *.ini
-megamanager/testdata/
+testdata/
 megamanager/tools/megaTools_1_1_98
 megamanager/tools/
 megamanager/tools/gmail
