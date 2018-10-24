@@ -60,7 +60,7 @@ If set remote files that have no corresponding local file will be removed.
 
 `--sync`
 
-If true, local and remote files for accoutns will be synced. Equivalent to using arguments "--download", "--remove_local",
+If true, local and remote files for accounts will be synced. Equivalent to using arguments "--download", "--remove_local",
 "--remote-outdated", "--remove_remote" and "--upload" all at once.
 
 `--upload`
