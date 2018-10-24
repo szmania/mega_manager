@@ -114,18 +114,11 @@ $ szmania
 *.log
 *.tmp
 *.npz
-tools/ffmpeg
-tools/megaTools_1_1_98
-=======
-# szmania
-*.tmp
-*.log
-*.cfg
 *.old
-.idea/
 *.ini
-megamanager/data/
-*.nzp
+megamanager/testdata/
 megamanager/tools/megaTools_1_1_98
-megamanager/tools/ffmpeg
+megamanager/tools/
+megamanager/tools/gmail
+
 
