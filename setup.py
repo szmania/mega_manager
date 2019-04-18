@@ -25,9 +25,7 @@ setup(
 
     packages=["megamanager"],
 
-    install_requires=['logging', 'os', 'numpy', 'random', 're', 'shutil',
-                      'signal', 'subprocess', 'tempfile', 'threading', 'time'
-                      ],
+    install_requires=['numpy'],
     entry_points={
         'console_scripts': [
             'megamanager = megamanager.__main__:main',
