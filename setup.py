@@ -25,7 +25,7 @@ setup(
 
     packages=["megamanager"],
 
-    install_requires=['numpy'],
+    install_requires=['numpy', 'psutil'],
     entry_points={
         'console_scripts': [
             'megamanager = megamanager.__main__:main',
