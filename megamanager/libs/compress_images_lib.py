@@ -3,16 +3,14 @@
 # Date: 6/5/2017
 # Initial Creation.
 ###
-
-from .lib import Lib
+from lib import Lib
 from logging import getLogger
-from os import path, remove
-from re import IGNORECASE, match, search
-from tools import CompressImage, DeleteBackupImage
+from os import path
+from re import IGNORECASE, match
+from tools.compressImages import CompressImage, DeleteBackupImage
+# from tools import CompressImage, DeleteBackupImage
 
 __author__ = 'szmania'
-
-SCRIPT_DIR = path.dirname(path.realpath(__file__))
 
 
 class CompressImages_Lib(object):
@@ -28,7 +26,7 @@ class CompressImages_Lib(object):
 
         self.__compress_images_obj = CompressImage()
         self.__deleteBackupImageObj = DeleteBackupImage()
-        self.__lib = Lib(logLevel=self.__log_level)
+        self.__lib = Lib(log_level=self.__log_level)
 
     def compress_image_file(self, file_path, jpeg_compression_quality_percentage, delete_backup=False,
                             delete_corrupt_images=False):
@@ -48,7 +46,7 @@ class CompressImages_Lib(object):
         logger = getLogger('CompressImages_Lib.compress_image_file')
         logger.setLevel(self.__log_level)
 
-        logger.debug(' Compressing image file "%s"' % file_path)
+        logger.debug(' Compressing image file: "%s"' % file_path)
         results = []
         file_ext = file_path.split('.')[-1]
         compressed_any_image = self.__compress_images_obj.processfile(filename=file_path)
@@ -56,7 +54,7 @@ class CompressImages_Lib(object):
 
         if match('jpe{0,1}g', file_ext, IGNORECASE):
             jpeg_compressed = self.compress_jpeg_image_file(file_path=file_path,
-                                                         quality_percentage=jpeg_compression_quality_percentage)
+                                                            quality_percentage=jpeg_compression_quality_percentage)
 
             if delete_corrupt_images and not jpeg_compressed:
                 logger.debug(' Deleting CORRUPT JPEG or JPG image file: "{}"'.format(file_path))
@@ -96,18 +94,16 @@ class CompressImages_Lib(object):
         logger.debug(' Compressing JPEG or JPG image file "%s".' % file_path)
         compressed = False
         skipped = False
-        result = self.__lib.exec_cmd_and_return_output(command='jpegoptim --max={quality_percentage} "{file_path}"'.format(
-            quality_percentage=quality_percentage, file_path=file_path))
-
+        result = None
+        try:
+            result = self.__lib.exec_cmd_and_return_output(command='jpegoptim --max={quality_percentage} "{file_path}"'.format(
+                quality_percentage=quality_percentage, file_path=file_path))
+        except Exception as e:
+            logger.error(' Exception: {}'.format(e))
         if 'optimized' in result[0]:
-            compressed = True
-        elif 'skipped' in result[0]:
-            skipped = True
-
-        if compressed:
             logger.debug(' Success, JPEG or JPG image file "%s" compressed successfully.' % file_path)
             return True
-        elif skipped:
+        elif 'skipped' in result[0]:
             logger.debug(' JPEG or JPG file already optimized! File was skipped: {}'.format(file_path))
             return True
         else:

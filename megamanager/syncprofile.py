@@ -7,12 +7,10 @@
 
 from account import Account
 from logging import getLogger
-from os import path
 from path_mapping import PathMapping
 
 __author__ = 'szmania'
 
-SCRIPT_DIR = path.dirname(path.realpath(__file__))
 
 class SyncProfile(object):
     def __init__(self, username, password, path_mappings, profile_name=None, log_level='DEBUG'):
@@ -38,7 +36,7 @@ class SyncProfile(object):
         # self.__remote_usedSpace = None
 
         # self.__account = super(SyncProfile, self).__init__(self, username=username, password=password, log_level=log_level)
-        self.__account = Account(username=username, password=password, logLevel=log_level)
+        self.__account = Account(username=username, password=password, log_level=log_level)
 
         # pass
 

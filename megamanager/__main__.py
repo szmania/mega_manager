@@ -1,12 +1,13 @@
 
 from argparse import ArgumentParser
 from mega_manager import MegaManager
-from os import path
+from os import path, sep
+# from mega_manager import MEGA_MANAGER_CONFIG_FILE_PATH, MegaManager
 
-
-HOME_DIRECTORY = path.expanduser("~\\")
-MEGA_MANAGER_CONFIG_DIR = HOME_DIRECTORY + ".mega_manager"
-MEGA_MANAGER_CONFIG_FILE_PATH = MEGA_MANAGER_CONFIG_DIR + "\\mega_manager.cfg"
+HOME_DIRECTORY = path.expanduser("~")
+MEGA_MANAGER_CONFIG_DIR = "{HOME_DIRECTORY}{sep}.mega_manager".format(HOME_DIRECTORY=HOME_DIRECTORY, sep=sep)
+MEGA_MANAGER_CONFIG_FILE_PATH = "{MEGA_MANAGER_CONFIG_DIR}{sep}mega_manager.cfg".format(MEGA_MANAGER_CONFIG_DIR=MEGA_MANAGER_CONFIG_DIR,
+                                                                                        sep=sep)
 
 def get_args():
     """
@@ -27,19 +28,19 @@ def get_args():
     parser.add_argument('--compress-videos', dest='compress_videos', action='store_true', default=False,
                         help='If true, this will compress local video files.')
 
-    parser.add_argument('--config', dest='config_path', default=MEGA_MANAGER_CONFIG_FILE_PATH,
+    parser.add_argument('--config', dest='mega_manager_config_path', default=MEGA_MANAGER_CONFIG_FILE_PATH,
                         help='Set MEGA Manager config file location. Default: "{}"'.format(MEGA_MANAGER_CONFIG_FILE_PATH))
 
     parser.add_argument('--download', dest='download', action='store_true', default=False,
                         help='If true, items will be downloaded from MEGA')
 
-    parser.add_argument('--down-speed', dest='down_speed', type=int, default=None,
+    parser.add_argument('--download-speed', dest='mega_download_speed', type=int, default=None,
                         help='Total download speed limit in kilobytes.')
 
-    parser.add_argument('--log', dest='log_level', default='INFO',
+    parser.add_argument('--log', dest='log_level', default=None,
                         help='Set logging level')
 
-    parser.add_argument('--output-data', dest='output_profile_data', action='store_true', default=False,
+    parser.add_argument('--profile-output-data', dest='mega_manager_output_profile_data_path', action='store_true', default=False,
                         help='If true, this will output all profile data to standard output.')
 
     parser.add_argument('--remove-oldest-file-version', dest='remove_oldest_file_version', action='store_true', default=False,
@@ -58,7 +59,7 @@ def get_args():
     parser.add_argument('--upload', dest='upload', action='store_true', default=False,
                         help='If true, items will be uploaded to MEGA')
 
-    parser.add_argument('--up-speed', dest='up_speed', type=int, default=None,
+    parser.add_argument('--upload-speed', dest='mega_upload_speed', type=int, default=None,
                         help='Total upload speed limit in kilobytes.')
 
     args = parser.parse_args()

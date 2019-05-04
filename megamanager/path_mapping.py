@@ -7,11 +7,9 @@
 
 from account import Account
 from logging import getLogger
-from os import path
 
 __author__ = 'szmania'
 
-SCRIPT_DIR = path.dirname(path.realpath(__file__))
 
 class PathMapping(Account):
     def __init__(self, local_path, remote_path, log_level='DEBUG'):

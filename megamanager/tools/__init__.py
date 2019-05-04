@@ -1,1 +1,1 @@
-from .compressImages import CompressImage, DeleteBackupImage
+# from .compressImages import CompressImage, DeleteBackupImage

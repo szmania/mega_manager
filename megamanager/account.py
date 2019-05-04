@@ -7,32 +7,30 @@
 
 from logging import getLogger
 from libs.lib import Lib
-from os import path
 
 __author__ = 'szmania'
 
-SCRIPT_DIR = path.dirname(path.realpath(__file__))
 
 class Account(object):
-    def __init__(self, username, password, logLevel='DEBUG'):
+    def __init__(self, username, password, log_level='DEBUG'):
         """
         Library for ffmpeg converter and encoder interaction.
 
         Args:
             username (str): MEGA account user name
             password (str): MEGA account password
-            logLevel (str): Logging level setting ie: "DEBUG" or "WARN"
+            log_level (str): Logging level setting ie: "DEBUG" or "WARN"
         """
 
         self.__username = username
         self.__password = password
-        self.__log_level = logLevel
+        self.__log_level = log_level
         
         self.__freeSpace = None
         self.__totalSpace = None
         self.__usedSpace = None
 
-        self.__lib = Lib(logLevel=logLevel)
+        self.__lib = Lib(log_level=log_level)
 
     @property
     def freeSpace(self):
@@ -43,7 +41,7 @@ class Account(object):
             String: Returns MEGA account free space
         """
 
-        logger = getLogger('Account.freeSpace')
+        logger = getLogger('Account.free_space')
         logger.setLevel(self.__log_level)
 
         return self.__freeSpace
@@ -57,7 +55,7 @@ class Account(object):
             value (str): value to set account free space to.
         """
 
-        logger = getLogger('Account.freeSpace')
+        logger = getLogger('Account.free_space')
         logger.setLevel(self.__log_level)
 
         self.__freeSpace = value
@@ -71,7 +69,7 @@ class Account(object):
             String: Returns MEGA account total space
         """
 
-        logger = getLogger('Account.totalSpace')
+        logger = getLogger('Account.total_space')
         logger.setLevel(self.__log_level)
 
         return self.__totalSpace
@@ -85,7 +83,7 @@ class Account(object):
             value (str): value to set account total space to.
         """
 
-        logger = getLogger('Account.totalSpace')
+        logger = getLogger('Account.total_space')
         logger.setLevel(self.__log_level)
 
         self.__totalSpace = value
@@ -100,7 +98,7 @@ class Account(object):
             String: Returns MEGA account used space
         """
 
-        logger = getLogger('Account.usedSpace')
+        logger = getLogger('Account.used_space')
         logger.setLevel(self.__log_level)
 
         return self.__usedSpace
@@ -114,7 +112,7 @@ class Account(object):
             value (str): value to set account used space to.
         """
 
-        logger = getLogger('Account.usedSpace')
+        logger = getLogger('Account.used_space')
         logger.setLevel(self.__log_level)
 
         self.__usedSpace = value
