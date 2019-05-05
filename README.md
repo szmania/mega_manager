@@ -92,6 +92,7 @@ Set config file to be "dir\mega_manger.cfg" AND remove outdated local and remote
 
 ### MEGA Manager Config File Format
 (by default lives in \<home\>/.mega_manager/mega_manger.cfg, unless specified otherwise)
+Command line arguments override corresponding config values. (ie: --compress via cli will override "COMPRESS_ALL=False" in config file) 
 
 ```
 [ACTIONS]
