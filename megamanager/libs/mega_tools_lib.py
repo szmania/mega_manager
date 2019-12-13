@@ -406,14 +406,14 @@ class MegaTools_Lib(object):
         logger.debug(' Error, could NOT get remote directory size!')
         return None
 
-    def get_remote_dirs(self, username, password, remoteRoot):
+    def get_remote_dirs(self, username, password, remote_path):
         """
         Get remote directories
 
         Args:
             username (str): username of account to get remote directories from
             password (str): password of account to get remote directories from
-            remoteRoot (str): Remote root path of remote accounts to map with local root.
+            remote_path (str): Remote root path of remote accounts to map with local root.
 
         Returns:
             list: returns list of directories
@@ -424,14 +424,14 @@ class MegaTools_Lib(object):
 
         logger.debug(' Get remote directories.')
 
-        cmd = ['start', '/B', 'megals', '-u', '%s' % username, '-p', '%s' % password, '"%s"' % remoteRoot]
+        cmd = ['start', '/B', 'megals', '-u', '%s' % username, '-p', '%s' % password, '"%s"' % remote_path]
         out, err = self.__lib.exec_cmd_and_return_output(command=cmd)
 
         dirs = out.split(linesep)
         dirList = []
 
         for dir in dirs:
-            dirName = sub('%s' % remoteRoot, '', dir)
+            dirName = sub('%s' % remote_path, '', dir)
             if not dirName == '':
                 dirList.append(sub('/', '', dirName))
 
@@ -595,7 +595,7 @@ class MegaTools_Lib(object):
         logger.warning(' Error in megals output. Returning "None".')
         return None
 
-    def get_remote_subdir_names_only(self, username, password, remotePath):
+    def get_remote_subdir_names_only(self, username, password, remote_path):
         """
         Get remote sub directory names only.
         Only the subdirectories immediately under remote_path are gotten.
@@ -603,7 +603,7 @@ class MegaTools_Lib(object):
         Args:
             username (str): username of account to get remote directories from
             password (str): password of account to get remote directories from
-            remotePath (str): Remote root path of remote accounts to map with local root.
+            remote_path (str): Remote root path of remote accounts to map with local root.
 
         Returns:
             list: sub directory names.
@@ -612,7 +612,7 @@ class MegaTools_Lib(object):
         logger = getLogger('MegaTools_Lib.get_remote_subdir_names_only')
         logger.setLevel(self.__log_level)
 
-        remote_root = remotePath + '/'
+        remote_root = remote_path + '/'
         cmd = 'start /B megals -n -u %s -p %s "%s"' % (username, password, remote_root)
         out, err = self.__lib.exec_cmd_and_return_output(command=cmd)
 
@@ -624,6 +624,28 @@ class MegaTools_Lib(object):
 
         logger.warning(str(err))
         return None
+
+    def is_remote_dir(self, username, password, remote_dir_path):
+        """
+        Determines if remote path is an existing remote direcotry.
+
+        Args:
+            username (str): MEGA profile username.
+            password (str): MEGA profile password.
+            remote_dir_path (str): MEGA profile remote directory path to check for existance.
+
+        Returns:
+            Bool: Whether true or not.
+        """
+        logger = getLogger('MegaTools_Lib.is_remote_dir')
+        logger.setLevel(self.__log_level)
+        logger.info(' Determining if remote directory path exists: "{}"'.format(remote_dir_path))
+        remote_dirs = self.get_remote_dirs(username=username, password=password, remote_path=remote_dir_path)
+        if len(remote_dirs) < 1:
+            logger.info(' Remote directory path does NOT exist! "{}"'.format(remote_dir_path))
+            return False
+        logger.info(' Remote directory path does exist: "{}"'.format(remote_dir_path))
+        return True
 
     def is_temp_mega_file(self, file_path):
         """
@@ -650,9 +672,9 @@ class MegaTools_Lib(object):
             logger.error(' Exception: {}'.format(e))
             return False
 
-    def remove_remote_file(self, username, password, remote_file_path, process_priority_class="NORMAL_PRIORITY_CLASS", process_set_priority_timeout=60):
+    def remove_remote_path(self, username, password, remote_file_path, process_priority_class="NORMAL_PRIORITY_CLASS", process_set_priority_timeout=60):
         """
-        Remove remote file.
+        Remove remote file or directory.
 
         Args:
             username (str): username of account to upload to
@@ -665,7 +687,7 @@ class MegaTools_Lib(object):
             boolean: whether successful or not.
         """
 
-        logger = getLogger('MegaTools_Lib.remove_remote_file')
+        logger = getLogger('MegaTools_Lib.remove_remote_path')
         logger.setLevel(self.__log_level)
 
         logger.debug(' %s - %s: Removing remote file "%s".' % (username, password, remote_file_path))
@@ -683,14 +705,17 @@ class MegaTools_Lib(object):
             logger.debug(' Error, could NOT remove remote file! "{}"'.format(remote_file_path))
             return False
 
-    def upload_local_dir(self, username, password, local_dir, remote_dir):
+    def upload_local_dir(self, username, password, local_dir, remote_path, process_priority_class=None,
+                                          process_set_priority_timeout=60):
         """
         Upload directory.
 
             username (str): username of account to upload to
             password (str): password of account to upload to
             local_dir (str): Local directory to upload
-            remote_dir (str): Remote directory to upload to
+            remote_path (str): Remote directory to upload to
+            process_priority_class (str): Priority level to set process to. ie: "NORMAL_PRIORITY_CLASS"
+            process_set_priority_timeout (int): Timeout in seconds to wait for process to start after setting priority.
 
         Returns:
             boolean: whether successful or not.
@@ -701,10 +726,16 @@ class MegaTools_Lib(object):
 
         logger.debug('%s - %s: Uploading files in directory "%s"' % (username, password, local_dir))
 
+        if not self.is_remote_dir(username=username, password=password, remote_dir_path=remote_path):
+            self.create_remote_dir(username=username, password=password, remote_path=remote_path,
+                                   process_priority_class=process_priority_class,
+                                   process_set_priority_timeout=process_set_priority_timeout)
+
         if self.__up_speed_limit:
-            cmd = 'megacopy -u %s -p %s --limit-speed %d --local "%s" --remote "%s"' % (username, password, self.__up_speed_limit, local_dir, remote_dir)
+            cmd = 'megacopy -u %s -p %s --limit-speed %d --local "%s" --remote "%s"' % (username, password,
+                                                                                        self.__up_speed_limit, local_dir, remote_path)
         else:
-            cmd = 'megacopy -u %s -p %s --local "%s" --remote "%s"' % (username, password, local_dir, remote_dir)
+            cmd = 'megacopy -u %s -p %s --local "%s" --remote "%s"' % (username, password, local_dir, remote_path)
 
         out, err = self.__lib.exec_cmd_and_return_output(command=cmd, output_file=self.__mega_tools_log)
 
@@ -715,15 +746,18 @@ class MegaTools_Lib(object):
         logger.warning(' Warning: {}'.format(err))
         return False
 
-    def upload_to_account(self, username, password, localRoot, remoteRoot):
+    def upload_to_account(self, username, password, local_root, remote_root, process_priority_class=None,
+                                          process_set_priority_timeout=60):
         """
         Upload all files to account.
 
         Args:
             username (str): username of account to __upload to
             password (str): password of account to __upload to
-            localRoot (str): Local root path of local account files to map with remote root.
-            remoteRoot (str): Remote root path of remote accounts to map with local root.
+            local_root (str): Local root path of local account files to map with remote root.
+            remote_root (str): Remote root path of remote accounts to map with local root.
+            process_priority_class (str): Priority level to set process to. ie: "NORMAL_PRIORITY_CLASS"
+            process_set_priority_timeout (int): Timeout in seconds to wait for process to start after setting priority.
 
         Returns:
             boolean: whether successful or not.
@@ -734,12 +768,13 @@ class MegaTools_Lib(object):
 
         logger.debug(' Starting uploading for %s - %s' % (username, password))
 
+        self.upload_local_dir(username=username, password=password, local_dir=local_root, remote_path=remote_root,
+                              process_priority_class=process_priority_class,
+                              process_set_priority_timeout=process_set_priority_timeout)
 
-        self.upload_local_dir(username=username, password=password, local_dir=localRoot, remote_dir=remoteRoot)
+        localRoot_adj = sub('\\\\', '/', local_root)
 
-        localRoot_adj = sub('\\\\', '/', localRoot)
-
-        cmd = 'megals -ln -u %s -p %s "%s"' % (username, password, remoteRoot)
+        cmd = 'megals -ln -u %s -p %s "%s"' % (username, password, remote_root)
         out, err = self.__lib.exec_cmd_and_return_output(command=cmd, output_file=self.__mega_tools_log)
 
         if not err:
@@ -748,9 +783,9 @@ class MegaTools_Lib(object):
                 if not line == '':
                     if len(split(':\d{2} ', line)) > 1:
                         remote_filePath = split(':\d{2} ', line)[1]
-                        dir_subPath = sub(remoteRoot, '', remote_filePath)
+                        dir_subPath = sub(remote_root, '', remote_filePath)
                         local_dir = localRoot_adj + '/' + dir_subPath
-                        remote_dir = remoteRoot + '/' + dir_subPath
+                        remote_dir = remote_root + '/' + dir_subPath
                         if path.exists(local_dir):
                             self.upload_local_dir(username, password, local_dir, remote_dir)
 

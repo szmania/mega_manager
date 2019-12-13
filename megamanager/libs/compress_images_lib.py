@@ -75,7 +75,6 @@ class CompressImages_Lib(object):
         logger.debug(' Error, image file "%s" NOT compressed successfully!' % file_path)
         return False
 
-
     def compress_jpeg_image_file(self, file_path, quality_percentage):
         """
         Compress images file.
@@ -104,7 +103,7 @@ class CompressImages_Lib(object):
             logger.debug(' Success, JPEG or JPG image file "%s" compressed successfully.' % file_path)
             return True
         elif 'skipped' in result[0]:
-            logger.debug(' JPEG or JPG file already optimized! File was skipped: {}'.format(file_path))
+            logger.debug(' JPEG or JPG file already optimized! File was skipped: "{}"'.format(file_path))
             return True
         else:
             logger.debug(' Error, JPEG or JPG image file "%s" NOT compressed successfully!' % file_path)

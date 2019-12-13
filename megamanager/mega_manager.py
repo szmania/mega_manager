@@ -860,6 +860,7 @@ class MegaManager(object):
                     except Exception as e:
                         print(' Exception: {}'.format(e))
                         raise e
+
         print(' Successfully loaded MEGA Manager config file properties data.')
 
     def _remove_outdated_files(self, username, password, local_root, remote_root):
@@ -914,7 +915,7 @@ class MegaManager(object):
                                     # local file is newer.
                                     logger.debug(' Local file is newer. Deleting remote file "%s"' % remote_file_path)
 
-                                    self.__mega_tools_lib.remove_remote_file(username=username, password=password,
+                                    self.__mega_tools_lib.remove_remote_path(username=username, password=password,
                                                                              remote_file_path=remote_file_path,
                                                                              process_priority_class=self.__megatools_process_priority_class,
                                                                              process_set_priority_timeout=self.__process_set_priority_timeout)
@@ -990,7 +991,7 @@ class MegaManager(object):
             for file_path in dont_exist_locally:
                 file_md5_hash = self.__lib.get_file_md5_hash(file_path)
                 self.__removed_remote_files.add(file_md5_hash)
-                self.__mega_tools_lib.remove_remote_file(username=username, password=password,
+                self.__mega_tools_lib.remove_remote_path(username=username, password=password,
                                                          remote_file_path=file_path,
                                                          process_priority_class=self.__megatools_process_priority_class,
                                                          process_set_priority_timeout=self.__process_set_priority_timeout)
@@ -1284,8 +1285,10 @@ class MegaManager(object):
         try:
             for pathMapping in profile.path_mappings:
                 self.__mega_tools_lib.upload_to_account(username=profile.account.username, password=profile.account.password,
-                                                        localRoot=pathMapping.local_path,
-                                                        remoteRoot=pathMapping.remote_path)
+                                                        local_root=pathMapping.local_path,
+                                                        remote_root=pathMapping.remote_path,
+                                                        process_priority_class=self.__megatools_process_priority_class,
+                                                        process_set_priority_timeout=self.__process_set_priority_timeout)
         except Exception as e:
             logger.warning(' Exception: {}'.format(e))
 
