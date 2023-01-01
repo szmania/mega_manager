@@ -79,6 +79,10 @@ HOME_DIRECTORY = path.expanduser("~")
 WORKING_DIR = path.dirname(path.realpath(__file__))
 
 
+class ConfigError(Exception):
+    pass
+
+
 class MegaManager(object):
     def __init__(self, **kwargs):
         self.__threads = []
@@ -773,6 +777,7 @@ class MegaManager(object):
             print(' Loading config file: {}'.format(self.__mega_manager_config_path))
             if path.exists(self.__mega_manager_config_path):
                 config_parser.read(self.__mega_manager_config_path)
+                config_parser.file_path = self.__mega_manager_config_path
             else:
                 raise Exception('Config file not found!')
         except Exception as e:
@@ -836,6 +841,10 @@ class MegaManager(object):
         """
         print(' Loading MEGA Manager config file properties data.')
         config_key_values = {}
+        sections = config_parser.sections()
+        if not sections:
+            raise ConfigError('No sections found in config file "{}"!'.format(config_parser.file_path))
+
         for section in config_parser.sections():
             if not section.startswith('PROFILE_') and (not ignore_config_actions or (ignore_config_actions and not section == 'ACTIONS')):
                 for key, value in (config_parser[section].items()):
@@ -1421,7 +1430,7 @@ class MegaManager(object):
         Returns:
              Mega Manager logging file path.
         """
-        
+
         return self.__mega_manager_log_path
 
     def run(self):
