@@ -1,6 +1,6 @@
 configparser==4.0.2
-numpy==1.22.0
-Pillow==9.3.0
+numpy==1.16.6
+Pillow==6.2.2
 psutil==5.7.0
 python-dateutil==2.8.2
 pytz==2022.7
