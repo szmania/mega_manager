@@ -1,6 +1,6 @@
 from setuptools import setup
 
-with open('megamanager/version.py') as f: exec(f.read())
+with open('megamanager/__version__.py') as f: exec(f.read())
 
 setup(
     name='megamanager',
