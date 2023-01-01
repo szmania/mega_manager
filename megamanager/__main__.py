@@ -37,7 +37,7 @@ def get_args():
     parser.add_argument('--download-speed', dest='mega_download_speed', type=int, default=None,
                         help='Total download speed limit in kilobytes.')
 
-    parser.add_argument('--log', dest='log_level', default=None,
+    parser.add_argument('--log', dest='log_level', default="INFO",
                         help='Set logging level')
 
     parser.add_argument('--profile-output-data', dest='mega_manager_output_profile_data_path', action='store_true', default=False,
