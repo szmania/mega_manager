@@ -16,8 +16,7 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python :: 2',
     ],
-    keywords=['megamanager', 'mega', 'mega.co.nz', 'mega.nz', 'cloud'
-              'compression'],
+    keywords=['megamanager', 'mega', 'mega.co.nz', 'mega.nz', 'cloud', 'compression'],
     python_requires='>=2.7,<3.0',
     packages=["megamanager"],
     install_requires=['numpy', 'psutil'],
