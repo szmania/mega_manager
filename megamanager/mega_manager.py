@@ -3,10 +3,8 @@
 # Date: 10/1/2015
 # Initial Creation
 ###
-# Modified by: Curtis Szmania
-# Date: 5/21/2017
-# Pep8 compliant.
-###
+
+import sys
 from ast import literal_eval
 from datetime import datetime
 from configparser import ConfigParser
@@ -23,7 +21,6 @@ from re import findall, IGNORECASE, match, search, sub
 from string import Formatter as string_formatter
 from syncprofile import SyncProfile
 from sys import stdout
-import sys
 from threading import Thread
 from time import sleep, time
 
@@ -36,45 +33,6 @@ __author__ = 'szmania'
 HOME_DIRECTORY = path.expanduser("~")
 
 
-# MEGAMANAGER_CONFIG = 'megaManager.cfg'
-
-# MEGA_ACCOUNTS_DATA = "megaAccounts_DATA.txt"
-# MEGA_TOOLS_PATH = ''
-# MEGA_ACCOUNTS = ''
-# LOCAL_ROOT = ''
-# REMOTE_ROOT = ''
-
-# COMPRESSION_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png']
-# COMPRESSION_VIDEO_EXTENSIONS = ['avi', 'flv', 'm4v', 'mkv', 'mp4', 'mpeg', 'mpg', 'wmv']
-# IMAGE_TEMP_FILE_EXTENSIONS = ['compressimages-backup']
-
-# COMPRESSION_FFMPEG_VIDEO_PRESET = 'medium'
-
-# HOME_DIRECTORY = path.expanduser("~")
-# TEMP_LOGFILE_PATH = gettempdir() + '{sep}megaManager_error_files_{randint}.tmp'.format(sep=sep,
-#                                                                                        randint=randint(0, 9999999999))
-
-
-# MEGA_MANAGER_CONFIG_DIR = HOME_DIRECTORY + "{sep}.mega_manager".format(sep=sep)
-# MEGA_MANAGER_CONFIG_DIR_DATA = MEGA_MANAGER_CONFIG_DIR + '{sep}data'.format(sep=sep)
-# MEGA_MANAGER_CONFIG_FILE_PATH = MEGA_MANAGER_CONFIG_DIR + "{sep}mega_manager.cfg".format(sep=sep)
-
-# COMPRESSED_IMAGES_FILE = MEGA_MANAGER_CONFIG_DIR_DATA + "{sep}compressed_images.npy".format(sep=sep)
-# UNABLE_TO_COMPRESS_IMAGES_FILE = MEGA_MANAGER_CONFIG_DIR_DATA + "{sep}unable_to_compress_images.npy".format(sep=sep)
-# COMPRESSED_VIDEOS_FILE = MEGA_MANAGER_CONFIG_DIR_DATA + "{sep}compressed_videos.npy".format(sep=sep)
-# UNABLE_TO_COMPRESS_VIDEOS_FILE = MEGA_MANAGER_CONFIG_DIR_DATA + "{sep}unable_to_compress_videos.npy".format(sep=sep)
-# REMOVED_REMOTE_FILES = MEGA_MANAGER_CONFIG_DIR_DATA + '{sep}removed_remote_files.npy'.format(sep=sep)
-
-# LOGFILE_STDOUT = MEGA_MANAGER_CONFIG_DIR + '{sep}logs{sep}mega_stdout.log'.format(sep=sep)
-# LOGFILE_STDERR = MEGA_MANAGER_CONFIG_DIR + '{sep}logs{sep}mega_stderr.log'.format(sep=sep)
-# MEGAMANAGER_LOGFILEPATH = MEGA_MANAGER_CONFIG_DIR + '{sep}logs{sep}mega_manager_log.log'.format(sep=sep)
-
-# MEGA_TOOLS_DIR = 'tools\\megaTools_1_1_98'
-# FFMPEG_EXE_PATH = 'tools{sep}ffmpeg{sep}ffmpeg.exe'.format(sep=sep)
-
-# PROCESS_SET_PRIORITY_TIMEOUT = 60
-
-# SCRIPT_DIR = path.dirname(path.realpath(__file__))
 # SLEEP_TIME_BETWEEN_RUNS_SECONDS = 300  # 5 minutes
 WORKING_DIR = path.dirname(path.realpath(__file__))
 
@@ -114,7 +72,6 @@ class MegaManager(object):
         self.__compression_video_extensions = []
         self.__image_temp_file_extensions = []
         self.__compression_ffmpeg_video_preset = None
-        # self.__megaManager_configPath = MEGAMANAGER_CONFIG
         self.__removed_remote_files_path = None
         self.__unable_to_compress_images_file_path = None
         self.__unable_to_compress_videos_file_path = None
@@ -127,9 +84,6 @@ class MegaManager(object):
         self.__ffmpeg_log_path = None
         self.__ffmpeg_threads = None
 
-        # self.__mega_tools_dir = MEGA_TOOLS_DIR
-        # self.__ffmpeg_exe_path = FFMPEG_EXE_PATH
-
         self.__sync_profiles = []
 
         self._setup(kwargs=kwargs)
@@ -141,7 +95,6 @@ class MegaManager(object):
         Args:
             kwargs (dict):  Dictionary of arguments.
         """
-
         for key, value in kwargs.items():
             if value:
                 setattr(self, '_MegaManager__%s' % key, value)
@@ -197,7 +150,6 @@ class MegaManager(object):
         try:
             if path.exists(local_root):
                 local_files = [path.join(full_path, name) for full_path, subdirs, files in walk(local_root) for name in files]
-                # local_files = [path.join(local_root, f) for f in listdir(local_root) if path.isfile(path.join(local_root, f))]
             else:
                 raise PathMappingDoesNotExist(' Path mapping does not exist: {}'.format(local_root))
 
@@ -257,9 +209,7 @@ class MegaManager(object):
         """
         logger = getLogger('MegaManager._compress_video_file_setup')
         logger.setLevel(self.__log_level)
-
         logger.debug(' Video file compression setup.')
-
         if path.exists(temp_file_path):
             self.__lib.delete_local_file(file_path=temp_file_path)
 
@@ -339,7 +289,6 @@ class MegaManager(object):
                             continue
 
                         local_file_ext = local_file_path.split('.')[-1]
-                        # local_file_ext = path.splitext(local_file_path)[1]
                         for compress_video_ext in self.__compression_video_extensions:
                             if match(local_file_ext, compress_video_ext, IGNORECASE):
                                 file_md5_hash = self.__lib.get_file_md5_hash(local_file_path)
@@ -372,8 +321,6 @@ class MegaManager(object):
 
         logger = getLogger('MegaManager._create_thread_get_profile_data')
         logger.setLevel(self.__log_level)
-
-        # logger.debug(' Creating thread to create "%s" file.' % self.__mega_accounts_output_path)
 
         try:
             t = Thread(target=self._get_profile_data, args=(profile,),
@@ -444,7 +391,7 @@ class MegaManager(object):
         Args:
             profile (Profile): Profile object
 
-        Retruns:
+        Returns:
             Boolean: Whether successful or not.
         """
         logger = getLogger('MegaManager._create_thread_remove_remote_files_that_dont_exist_locally')
@@ -471,7 +418,7 @@ class MegaManager(object):
         Args:
             sync_profiles (SyncProfile): SyncProfiles objects
 
-        Retruns:
+        Returns:
             Boolean: Whether successful or not.
         """
 
@@ -496,7 +443,7 @@ class MegaManager(object):
         Args:
             sync_profiles (SyncProfile): SyncProfile objects
 
-        Retruns:
+        Returns:
             Boolean: Whether successful or not.
         """
 
@@ -521,7 +468,7 @@ class MegaManager(object):
         Args:
             profile (Profile): Profile object
 
-        Retruns:
+        Returns:
             Boolean: Whether successful or not.
         """
 
@@ -539,29 +486,6 @@ class MegaManager(object):
             logger.error(' Exception: {}'.format(e))
             return False
 
-    def _export_accounts_details_dict(self):
-        """
-        Dump self.__accounts_details_dict to file.
-
-        """
-
-        logger = getLogger('MegaManager._export_accounts_details_dict')
-        logger.setLevel(self.__log_level)
-        logger.debug(' Exporting config data to MEGA Manager config file.')
-
-        # with open(self.__mega_accounts_output_path, "w") as outs:
-        #     for username in sorted(self.__accounts_details_dict):
-        #         accountObj = self.__accounts_details_dict[username]
-        #         lines = []
-        #         line = 'Total Space: ' + str(accountObj.remote_total_space)
-        #         lines.append(line)
-        #         line = 'Used Space: ' + str(accountObj.remote_used_space)
-        #         lines.append(line)
-        #         line = 'Free Space: ' + str(accountObj.remote_free_space)
-        #         lines.append(line)
-        #         outs.write(lines)
-        # outs.close()
-
     def _export_config_file_data(self, config_parser):
         """
         Export config file data.
@@ -570,39 +494,16 @@ class MegaManager(object):
             config_parser (ConfigParser): Config parser object of config file.
 
         """
-
         logger = getLogger('MegaManager._export_config_file_data')
         logger.setLevel(self.__log_level)
-
         logger.debug(' Exporting config data to MEGA Manager config file.')
         try:
             with open(self.__mega_manager_config_path, 'w') as config_file:
                 config_parser.write(config_file)
-            # with open(self.__mega_manager_config_path, "w") as outs:
-            #     outs.write('MEGA_TOOLS_DIR=%s' % str(self.__mega_tools_dir))
-            #     outs.write('FFMPEG_EXE_PATH=%s' % str(self.__ffmpeg_exe_path))
-            #     outs.write('SLEEP_TIME_BETWEEN_RUNS_SECONDS=%s' % str(self.__sleep_time_between_runs_seconds))
-            #
-            #     profileCount = 0
-            #     for profile in self.__sync_profiles:
-            #         profileCount += 1
-            #         outs.write('[Profile%d]' % profileCount)
-            #         outs.write('ProfileName=%s' % str(profile.profile_name))
-            #         outs.write('Username=%s' % str(profile.account.username))
-            #         outs.write('Password=%s' % str(profile.account.password))
-            #
-            #         pathMappingsCount = 0
-            #         for pathMapping in profile.path_mappings:
-            #             pathMappingsCount += 1
-            #             outs.write('LocalPath%d=%s' % (pathMappingsCount, str(pathMapping.local_path)))
-            #             outs.write('RemotePath%d=%s' % (pathMappingsCount, str(pathMapping.remotPath)))
-            #
-            # outs.close()
             return True
         except Exception as e:
             logger.error(' Exception: %s' % str(e))
             return False
-
 
     def _get_accounts_user_pass(self, file):
         """
@@ -619,7 +520,6 @@ class MegaManager(object):
         Returns:
             Returns list of dictionaries holding user and pass.
         """
-
         logger = getLogger('MegaManager._get_accounts_user_pass')
         logger.setLevel(self.__log_level)
 
@@ -651,28 +551,17 @@ class MegaManager(object):
         Args:
             profile (Profile): Profile object
 
-        Retruns:
+        Returns:
             Boolean: Whether successful or not.
         """
 
         logger = getLogger('MegaManager._get_profile_data')
         logger.setLevel(self.__log_level)
 
-        # logger.debug(' Creating MEGA accounts output file.')
-
         try:
-            # self.__accounts_details_dict = {}
-            # with open(self.__mega_accounts_output_path, "w") as outs:
-            # for profile in self.__sync_profiles:
             logger.debug(' Creating thread to gather details for profile "%s".' % profile.profile_name)
 
             self._get_profile_details(profile=profile)
-            # t_megaFile = Thread(target=self._get_profile_details, args=(profile, ),
-            #                     name='thread_get_profile_data_%s' % profile.profile_name)
-            # t_megaFile.start()
-            # self.__threads.append(t_megaFile)
-
-            # outs.close()
             return True
         except (Exception, KeyboardInterrupt)as e:
             logger.warning(' Exception: {}'.format(e))
@@ -682,12 +571,11 @@ class MegaManager(object):
 
     def _get_profile_details(self, profile):
         """
-        Creats dictionary of account data (remote size, local size, etc...) for self.__mega_accounts_output_path file.
+        Creates dictionary of account data (remote size, local size, etc...) for self.__mega_accounts_output_path file.
 
         Args:
             profile (SyncProfile): Profile to get data for.
         """
-
         self._update_account_remote_details(account=profile.account)
 
     def _get_remote_file_modified_date(self, username, password, localFilePath, localRoot, remoteRoot):
@@ -788,7 +676,6 @@ class MegaManager(object):
         self._import_config_mega_profile_data(config_parser=config_parser)
         print(' Successfully imported sections from config file: {}'.format(config_parser.sections()))
         return config_parser
-
 
     def _import_config_mega_profile_data(self, config_parser):
         """
@@ -1012,31 +899,6 @@ class MegaManager(object):
             logger.error('Exception: {}'.format(e))
             return False
 
-    def _remove_temp_files(self):
-        """
-        Remove MEGA Manager temporary files.
-
-        Returns:
-            Bool: Whether successful or not.
-        """
-        logger = getLogger('MegaManager._remove_temp_files')
-        logger.setLevel(self.__log_level)
-
-        logger.info(' Removing temporary files!')
-        try:
-            # dir = self.__mega_manager_config_dir_data_path
-            # files = listdir(dir)
-            #
-            # for file in files:
-            #     if file.endswith('.npy'):
-            #         file_path = dir + '{sep}'.format(sep=sep) + file
-            #         self.__lib.delete_local_file(file_path=file_path)
-            return True
-
-        except Exception as e:
-            logger.error(' Exception: {}'.format(e))
-            return False
-
     def _setup(self, kwargs):
         """
         Setup MegaManager applicaiton.
@@ -1172,9 +1034,6 @@ class MegaManager(object):
                                                                 remote_root=pathMapping.remote_path,
                                                                 process_set_priority_timeout=self.__process_set_priority_timeout)
 
-            # self.__mega_tools_lib.download_all_files_from_account(account['user'], account['pass'], self.__local_root, self.__remote_root)
-
-
     def _thread_output_profile_data(self, profile):
         """
         Output profile data to standard output.
@@ -1182,13 +1041,11 @@ class MegaManager(object):
         Args:
             profile (Profile): Profile object
 
-        Retruns:
+        Returns:
             Boolean: Whether successful or not.
         """
-
         logger = getLogger('MegaManager._thead_output_profile_data')
         logger.setLevel(self.__log_level)
-
         try:
             print('')
             print('')
@@ -1235,13 +1092,11 @@ class MegaManager(object):
         Args:
             sync_profiles (SyncProfile): syncProfile objects
 
-        Retruns:
+        Returns:
             Boolean: Whether successful or not.
         """
-
         logger = getLogger('MegaManager._thread_sync_profiles_image_compression')
         logger.setLevel(self.__log_level)
-
         logger.debug(' Compressing local image files')
 
         try:
@@ -1261,7 +1116,7 @@ class MegaManager(object):
         Args:
             syncProfiles (SyncProfile): syncProfile objects
 
-        Retruns:
+        Returns:
             Boolean: Whether successful or not.
         """
 
@@ -1284,7 +1139,7 @@ class MegaManager(object):
         Args:
             profile (Profile): Profile object
 
-        Retruns:
+        Returns:
             Boolean: Whether successful or not.
         """
 
@@ -1314,55 +1169,11 @@ class MegaManager(object):
 
         logger = getLogger('MegaManager._update_account_remote_details')
         logger.setLevel(self.__log_level)
-
         username = account.username
         password = account.password
-
         account.total_space = self.__mega_tools_lib.get_account_total_space(username=username, password=password)
-
         account.free_space = self.__mega_tools_lib.get_account_free_space(username=username, password=password)
-
         account.used_space = self.__mega_tools_lib.get_account_used_space(username=username, password=password)
-
-        # accountDetails.append('REMOTE SIZE: ' + used_space)
-        #
-        # subDirs = self.__mega_tools_lib.get_remote_subdir_names_only(username=username, password=password, remote_path=self.__remote_root)
-        #
-        # directoryLines = []
-        # totalLocalSize = 0
-        #
-        # if subDirs:
-        #     for line in subDirs:
-        #         localDirSize = 0
-        #         localDirPath = self.__local_root + '\\' + line
-        #
-        #         if path.exists(localDirPath) and not line == '':
-        #             for r, d, f in walk(localDirPath):
-        #                 for file in f:
-        #                     filePath = path.join(r, file)
-        #                     if path.exists(filePath):
-        #                         localDirSize = localDirSize + path.getsize(filePath)
-        #
-        #             totalLocalSize = totalLocalSize + localDirSize
-        #             remoteDirSize = self.__mega_tools_lib.get_remote_dir_size(username, password, localDirPath,
-        #                                                                  localRoot=self.__local_root,
-        #                                                                  remoteRoot=self.__remote_root)
-        #
-        #             directoryLines.append(line +
-        #                                   ' (%s remote, %s local)\n' % (self.__lib.get_mb_size_from_bytes(int(remoteDirSize)), self.__lib.get_mb_size_from_bytes(int(localDirSize))))
-        #
-        #         elif not line == '':
-        #             directoryLines.append(line + ' (%s remote, NONE local)\n' % (self.__lib.get_mb_size_from_bytes(int(remoteDirSize))))
-        #
-        #     accountDetails.append('LOCAL SIZE: %s \n' % self.__lib.get_mb_size_from_bytes(totalLocalSize))
-        #
-        #     for line in directoryLines:
-        #         accountDetails.append(line)
-        #     accountDetails.append('\n')
-        #     accountDetails.append('\n')
-        #
-        #     self.__accounts_details_dict[username] = accountDetails
-
         return account
 
     def _update_profile_remote_details(self, profile):
@@ -1465,28 +1276,13 @@ class MegaManager(object):
                     if self.__mega_manager_output_profile_data_path:
                         self._create_thread_output_profile_data(profile=profile)
 
-                    # if self.__remove_outdated:
-                    #     self._remove_outdated_local_remote_files(profile=profile)
-
                     if self.__sync:
                         if self.__local_is_truth:
                             self._thread_remove_remote_files_that_dont_exist_locally(profile=profile)
                         else:
                             self._create_thread_remove_remote_files_that_dont_exist_locally(profile=profile)
-                        # self._thread_download_profile_files(profile=profile)
                         self._create_thread_download(profile=profile)
-                        # self._thread_upload_profile_files(profile=profile)
                         self._create_thread_upload(profile=profile)
-                        # self._remove_outdated_local_remote_files(profile=profile)
-
-                    # if self.__download:
-                    #     # self._thread_download_profile_files(profile=profile)
-                    #     self._create_thread_download(profile=profile)
-                    # if self.__upload:
-                    #     # self._thread_upload_profile_files(profile=profile)
-                    #     self._create_thread_upload(profile=profile)
-                    # if self.__remove_remote:
-                    #     self._create_thread_remove_remote_files_that_dont_exist_locally(profile=profile)
 
                     profile_threads = [item for item in self.__threads if item not in non_profile_threads]
                     self._wait_for_threads_to_finish(threads=profile_threads)
@@ -1506,11 +1302,5 @@ class MegaManager(object):
 class PathMappingDoesNotExist(Exception):
     pass
 
-def main():
-    pass
-
-
-if __name__ == "__main__":
-    main()
 
 

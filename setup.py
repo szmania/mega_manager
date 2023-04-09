@@ -6,7 +6,7 @@ setup(
     name='megamanager',
     version=__version__,
     description='Multiple MEGA.co.nz account manager that has synchronization and compression capabilities. ',
-    url='https://github.com/szmania/MEGA_Manager',
+    url='https://github.com/szmania/mega_manager',
     author='Curtis Szmania',
     author_email='szmania@yahoo.com',
     license='GNU General Public License v3.0',

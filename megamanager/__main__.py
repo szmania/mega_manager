@@ -1,13 +1,12 @@
-
 from argparse import ArgumentParser
 from mega_manager import MegaManager
 from os import path, sep
-# from mega_manager import MEGA_MANAGER_CONFIG_FILE_PATH, MegaManager
 
 HOME_DIRECTORY = path.expanduser("~")
-MEGA_MANAGER_CONFIG_DIR = "{HOME_DIRECTORY}{sep}.mega_manager".format(HOME_DIRECTORY=HOME_DIRECTORY, sep=sep)
-MEGA_MANAGER_CONFIG_FILE_PATH = "{MEGA_MANAGER_CONFIG_DIR}{sep}mega_manager.cfg".format(MEGA_MANAGER_CONFIG_DIR=MEGA_MANAGER_CONFIG_DIR,
-                                                                                        sep=sep)
+MEGA_MANAGER_CONFIG_DIR = path.join("{HOME_DIRECTORY}".format(HOME_DIRECTORY=HOME_DIRECTORY), ".mega_manager")
+MEGA_MANAGER_CONFIG_FILE_PATH = path.join("{MEGA_MANAGER_CONFIG_DIR}".format(
+    MEGA_MANAGER_CONFIG_DIR=MEGA_MANAGER_CONFIG_DIR), "mega_manager.cfg")
+
 
 def get_args():
     """
@@ -67,14 +66,10 @@ def get_args():
 
 
 def main():
-
     kwargs = get_args()
-
-    megaObj = MegaManager(**kwargs)
-
-    megaObj.run()
+    mega = MegaManager(**kwargs)
+    mega.run()
 
 
 if __name__ == "__main__":
-
     main()

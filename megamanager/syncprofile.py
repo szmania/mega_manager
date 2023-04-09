@@ -29,16 +29,8 @@ class SyncProfile(object):
         self.__profile_name = profile_name if profile_name is not None else username
         self.__path_mappings = path_mappings
         self.__log_level = log_level
-
         self.__local_used_space = None
-        # self.__remote_freeSpace = None
-        # self.__remote_totalSpace = None
-        # self.__remote_usedSpace = None
-
-        # self.__account = super(SyncProfile, self).__init__(self, username=username, password=password, log_level=log_level)
         self.__account = Account(username=username, password=password, log_level=log_level)
-
-        # pass
 
     @property
     def account(self):
@@ -48,10 +40,8 @@ class SyncProfile(object):
         Returns:
             Account: Returns MEGA profile account
         """
-
         logger = getLogger('SyncProfile.account')
         logger.setLevel(self.__log_level)
-
         return self.__account
 
     @account.setter
@@ -62,10 +52,8 @@ class SyncProfile(object):
         Args:
             value (str): value to set profile account to.
         """
-
         logger = getLogger('SyncProfile.account')
         logger.setLevel(self.__log_level)
-
         self.__account = value
 
     @property
@@ -76,10 +64,8 @@ class SyncProfile(object):
         Returns:
             String: Returns MEGA profile local used space
         """
-
         logger = getLogger('SyncProfile.local_used_space')
         logger.setLevel(self.__log_level)
-
         return self.__local_used_space
 
     @local_used_space.setter
@@ -90,10 +76,8 @@ class SyncProfile(object):
         Args:
             value (str): value to set profile local used space to.
         """
-
         logger = getLogger('SyncProfile.local_used_space')
         logger.setLevel(self.__log_level)
-
         self.__local_used_space = value
 
     @property
@@ -104,10 +88,8 @@ class SyncProfile(object):
         Returns:
             Account: Returns MEGA profile path mappings list of PathMapping objects
         """
-
         logger = getLogger('SyncProfile.path_mappings')
         logger.setLevel(self.__log_level)
-
         return self.__path_mappings
 
     @path_mappings.setter
@@ -118,10 +100,8 @@ class SyncProfile(object):
         Args:
             value (list): list of PathMapping objects to set to.
         """
-
         logger = getLogger('SyncProfile.path_mappings')
         logger.setLevel(self.__log_level)
-
         self.__path_mappings = value
 
     @property
@@ -132,10 +112,8 @@ class SyncProfile(object):
         Returns:
             String: Returns profile name
         """
-
         logger = getLogger('SyncProfile.profile_name')
         logger.setLevel(self.__log_level)
-
         return self.__profile_name
 
     @profile_name.setter
@@ -146,10 +124,8 @@ class SyncProfile(object):
         Args:
             value (str): value to set profile name to.
         """
-
         logger = getLogger('SyncProfile.profile_name')
         logger.setLevel(self.__log_level)
-
         self.__profile_name = value
 
     @property
@@ -160,25 +136,9 @@ class SyncProfile(object):
         Returns:
             String: Returns MEGA profile remote free space
         """
-
         logger = getLogger('SyncProfile.remote_free_space')
         logger.setLevel(self.__log_level)
         return self.__account.freeSpace
-        # return self.__remote_freeSpace
-
-    # @remote_free_space.setter
-    # def remote_free_space(self, value):
-    #     """
-    #     Setter for MEGA profile remote free space.
-    #
-    #     Args:
-    #         value (str): value to set profile remote free space to.
-    #     """
-    #
-    #     logger = getLogger('SyncProfile.remote_free_space')
-    #     logger.setLevel(self.__log_level)
-    #
-    #     self.__remote_freeSpace = value
 
     @property
     def remote_total_space(self):
@@ -188,26 +148,9 @@ class SyncProfile(object):
         Returns:
             String: Returns MEGA profile remote total space
         """
-
         logger = getLogger('SyncProfile.remote_total_space')
         logger.setLevel(self.__log_level)
-
         return self.__account.totalSpace
-        # return self.__remote_totalSpace
-
-    # @remote_total_space.setter
-    # def remote_total_space(self, value):
-    #     """
-    #     Setter for MEGA profile remote total space.
-    #
-    #     Args:
-    #         value (str): value to set profile remote total space to.
-    #     """
-    #
-    #     logger = getLogger('SyncProfile.remote_total_space')
-    #     logger.setLevel(self.__log_level)
-    #
-    #     self.__remote_totalSpace = value
 
     @property
     def remote_used_space(self):
@@ -217,26 +160,9 @@ class SyncProfile(object):
         Returns:
             String: Returns MEGA profile remote  used space
         """
-
         logger = getLogger('SyncProfile.remote_used_space')
         logger.setLevel(self.__log_level)
-
         return self.__account.usedSpace
-        # return self.__remote_usedSpace
-
-    # @remote_used_space.setter
-    # def remote_used_space(self, value):
-    #     """
-    #     Setter for MEGA profile remote used space.
-    #
-    #     Args:
-    #         value (str): value to set profile remote used space to.
-    #     """
-    #
-    #     logger = getLogger('SyncProfile.remote_used_space')
-    #     logger.setLevel(self.__log_level)
-    #
-    #     self.__remote_usedSpace = value
 
     def add_path_mapping(self, localRoot, remoteRoot):
         """
@@ -246,12 +172,9 @@ class SyncProfile(object):
             localRoot (str): Local root of pair.
             remoteRoot (str): Remote root of pair.
         """
-
         logger = getLogger('SyncProfile.add_path_mapping')
         logger.setLevel(self.__log_level)
-
         logger.debug(' Adding path mapping to profile.')
-
         try:
             pathMapObj = PathMapping(local_path=localRoot, remote_path=remoteRoot)
             self.__path_mappings[self.get_path_mappings_count()] = pathMapObj
@@ -271,12 +194,9 @@ class SyncProfile(object):
         Returns:
             PathMapping: Returns PathMapping object.
         """
-
         logger = getLogger('SyncProfile.get_path_mapping')
         logger.setLevel(self.__log_level)
-
         logger.debug(' Returning path mapping at index %d.' % index)
-
         if index:
             if not index + 1 > len(self.__path_mappings):
                 return self.__path_mappings[index]
@@ -286,7 +206,7 @@ class SyncProfile(object):
         else:
             if len(self.__path_mappings) > 0:
                 logger.debug(' No index given. Returning first item.')
-                return self.__path_mappings[0].remote_path
+                return self.__path_mappings[0]
             else:
                 logger.error(' Error, no path mapping exist for this profile!')
                 return None
@@ -297,16 +217,13 @@ class SyncProfile(object):
 
         Args:
             index (int): index of path mapping to get local root of.
-        
+
         Returns:
             String: Returns local root path.
         """
-
         logger = getLogger('SyncProfile.get_path_mapping_local_path')
         logger.setLevel(self.__log_level)
-        
         logger.debug(' Returning path mapping local root path.')
-        
         if index:
             if not index + 1 > len(self.__path_mappings):
                 return self.__path_mappings[index].local_path
@@ -331,12 +248,9 @@ class SyncProfile(object):
         Returns:
             String: Returns remote root path.
         """
-
         logger = getLogger('SyncProfile.get_path_mapping_remote_path')
         logger.setLevel(self.__log_level)
-
         logger.debug(' Returning path mapping remote root path.')
-
         if index:
             if not index + 1 > len(self.__path_mappings):
                 return self.__path_mappings[index].remote_path
@@ -358,10 +272,8 @@ class SyncProfile(object):
         Returns:
             integer: size of path mappings list.
         """
-
         logger = getLogger('SyncProfile.get_path_mappings_count')
         logger.setLevel(self.__log_level)
-
         return len(self.__path_mappings)
 
     def set_path_mapping_local_path(self, value, index=None):
@@ -372,13 +284,9 @@ class SyncProfile(object):
             index (int): index of path mapping to set local root of.
             value (str): value to set local root to.
         """
-
         logger = getLogger('SyncProfile.set_path_mapping_local_path')
         logger.setLevel(self.__log_level)
-
         logger.debug(' Setting path mapping local root path.')
-
-        # if index:
         if not index + 1 > len(self.__path_mappings):
             self.__path_mappings[index].local_path = value
             return True
@@ -394,19 +302,13 @@ class SyncProfile(object):
             index (int): index of path mapping to set remote root of.
             value (str): value to set remote root to.
         """
-
         logger = getLogger('SyncProfile.set_path_mapping_remote_root')
         logger.setLevel(self.__log_level)
-
         logger.debug(' Setting path mapping remote root path.')
-
         if not index + 1 > len(self.__path_mappings):
             self.__path_mappings[index].remote_path = value
             return True
         else:
             logger.error(' Error, given index of "%d" is larger than path mappings list for profile.' % index)
             return False
-
-    
-                
 
