@@ -632,7 +632,7 @@ class MegaManager(object):
             if remote_files:
                 for remote_file_path in remote_files:
                     file_sub_path = sub(remote_root, '', remote_file_path)
-                    local_file_path = local_root + file_sub_path.replace('/', '{sep}'.format(sep=sep))
+                    local_file_path = path.join(local_root, path.abspath(file_sub_path))
 
                     if not path.exists(local_file_path):
                         found = False
@@ -789,9 +789,9 @@ class MegaManager(object):
                         remote_file_size = self.__mega_tools_lib.get_file_size_from_megals_line_data(line=line)
                         remote_file_modified_date = self.__mega_tools_lib.get_file_date_from_megals_line_data(line=line)
                         remote_file_modified_date_dt = datetime.strptime(remote_file_modified_date, '%Y-%m-%d %H:%M:%S')
-                        remote_root = remote_root.replace('/', '{sep}'.format(sep=sep))
+                        remote_root = path.abspath(remote_root)
                         local_root = local_root
-                        conv_remote_file_path = remote_file_path.replace('/', '{sep}'.format(sep=sep))
+                        conv_remote_file_path = path.abspath(remote_file_path)
                         local_file_path = conv_remote_file_path.replace(remote_root, local_root)
 
                         if path.exists(local_file_path):

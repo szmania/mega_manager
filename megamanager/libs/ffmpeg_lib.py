@@ -5,6 +5,7 @@
 ###
 
 from .lib import Lib
+from .mega_tools_lib import MEGA_MANAGER_CONFIG_DIR
 from logging import getLogger
 from os import path, remove, sep
 from platform import system
@@ -12,9 +13,8 @@ from platform import system
 __author__ = 'szmania'
 
 HOME_DIRECTORY = "~"
-MEGA_MANAGER_CONFIG_DIR = "{HOME_DIRECTORY}{sep}.mega_manager".format(HOME_DIRECTORY=HOME_DIRECTORY, sep=sep)
-FFMPEG_LOG_PATH = "{MEGA_MANAGER_CONFIG_DIR}{sep}logs{sep}ffmpeg.log".format(MEGA_MANAGER_CONFIG_DIR=MEGA_MANAGER_CONFIG_DIR,
-                                                                             sep=sep)
+FFMPEG_LOG_PATH = path.join("{MEGA_MANAGER_CONFIG_DIR}".format(
+    MEGA_MANAGER_CONFIG_DIR=MEGA_MANAGER_CONFIG_DIR),"logs","ffmpeg.log")
 
 
 
@@ -50,7 +50,7 @@ class FFMPEG_Lib(object):
         Returns:
             subprocess object:
         """
-    
+
         logger = getLogger('FFMPEG_Lib.compress_video_file')
         logger.setLevel(self.__log_level)
         logger.debug(' Compressing video file: "%s"' % source_path)

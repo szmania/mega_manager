@@ -13,10 +13,9 @@ from re import findall, split, sub
 __author__ = 'szmania'
 
 HOME_DIRECTORY = "~"
-MEGA_MANAGER_CONFIG_DIR = "{HOME_DIRECTORY}{sep}.mega_manager".format(HOME_DIRECTORY=HOME_DIRECTORY, sep=sep)
-MEGATOOLS_LOG_PATH = "{MEGA_MANAGER_CONFIG_DIR}{sep}logs{sep}mega_tools.log".format(
-    MEGA_MANAGER_CONFIG_DIR=MEGA_MANAGER_CONFIG_DIR,
-    sep=sep)
+MEGA_MANAGER_CONFIG_DIR = path.join("{HOME_DIRECTORY}".format(HOME_DIRECTORY=HOME_DIRECTORY),".mega_manager")
+MEGATOOLS_LOG_PATH = path.join("{MEGA_MANAGER_CONFIG_DIR}".format(
+    MEGA_MANAGER_CONFIG_DIR=MEGA_MANAGER_CONFIG_DIR), "logs","mega_tools.log")
 
 
 class MegaTools_Lib(object):

@@ -160,7 +160,74 @@ local_path_1=/mnt/sda1/games
 remote_path_1=/Root/games
 ```
 
+Paths are now operating system agnostic (eg: can process both `\\` and `/`).
+Example:
 
+```
+[ACTIONS]
+COMPRESS_ALL=True
+COMPRESS_IMAGES=False
+COMPRESS_VIDEOS=False
+DOWNLOAD=False
+UPLOAD=False
+SYNC=True
+LOCAL_IS_TRUTH=True
+
+[PROPERTIES]
+LOG_LEVEL="DEBUG"
+MEGA_MANAGER_CONFIG_DIR_PATH="{HOME_DIRECTORY}/.mega_manager"
+MEGA_MANAGER_LOG_PATH="{MEGA_MANAGER_CONFIG_DIR_PATH}/logs/mega_manager_log.log"
+MEGA_MANAGER_CONFIG_DIR_DATA_PATH="{MEGA_MANAGER_CONFIG_DIR_PATH}/data"
+MEGA_MANAGER_STDOUT_PATH="{MEGA_MANAGER_CONFIG_DIR_PATH}/logs/mega_stdout.log"
+MEGA_MANAGER_STDERR_PATH="{MEGA_MANAGER_CONFIG_DIR_PATH}/logs/mega_stderr.log"
+MEGA_MANAGER_OUTPUT_PROFILE_DATA_PATH=""
+SLEEP_TIME_BETWEEN_RUNS_SECONDS=300
+REMOVE_OLDEST_FILE_VERSION=False
+PROCESS_SET_PRIORITY_TIMEOUT=60
+
+[IMAGE_COMPRESSION]
+COMPRESSED_IMAGES_FILE_PATH ="{MEGA_MANAGER_CONFIG_DIR_DATA_PATH}/compressed_images.npy"
+UNABLE_TO_COMPRESS_IMAGES_FILE_PATH="{MEGA_MANAGER_CONFIG_DIR_DATA_PATH}/unable_to_compress_images.npy"
+COMPRESSION_IMAGE_EXTENSIONS=["jpg","jpeg","png"]
+IMAGE_TEMP_FILE_EXTENSIONS=["compressimages-backup", "unoptimized", "tmp"]
+COMPRESSION_JPEG_QUALITY_PERCENTAGE=60
+
+[VIDEO_COMPRESSION]
+COMPRESSED_VIDEOS_FILE_PATH="{MEGA_MANAGER_CONFIG_DIR_DATA_PATH}/compressed_videos.npy"
+UNABLE_TO_COMPRESS_VIDEOS_FILE_PATH="{MEGA_MANAGER_CONFIG_DIR_DATA_PATH}/unable_to_compress_videos.npy"
+COMPRESSION_VIDEO_EXTENSIONS=["avi","flv","m4v","mkv","mp4","mpeg","mpg","wmv"]
+COMPRESSION_FFMPEG_VIDEO_PRESET="slow"
+FFMPEG_PROCESS_PRIORITY_CLASS="HIGH_PRIORITY_CLASS"
+FFMPEG_LOG_PATH="{MEGA_MANAGER_CONFIG_DIR_PATH}/logs/ffmpeg.log"
+FFMPEG_THREADS=4
+
+[REMOTE]
+REMOVED_REMOTE_FILES_PATH="{MEGA_MANAGER_CONFIG_DIR_DATA_PATH}/removed_remote_files.npy"
+
+[MEGATOOLS]
+MEGATOOLS_PROCESS_PRIORITY_CLASS="HIGH_PRIORITY_CLASS"
+MEGATOOLS_LOG_PATH="{MEGA_MANAGER_CONFIG_DIR_PATH}/logs/mega_tools.log"
+
+[MEGA]
+MEGA_DOWNLOAD_SPEED=200
+MEGA_UPLOAD_SPEED=200
+
+[PROFILE_0]
+profile_name=Pictures - email@email.com
+username=email@email.com
+password=mypassword
+local_path_0=/mnt/sda1/pictures
+remote_path_0=/Root/pictures
+
+[PROFILE_1]
+profile_name=Videos & Games - email2@email.com
+username=email2@email.com
+password=mypassword2
+local_path_0=/mnt/sda1/videos
+remote_path_0=/Root/videos
+local_path_1=/mnt/sda1/games
+remote_path_1=/Root/games
+```
 
 
 

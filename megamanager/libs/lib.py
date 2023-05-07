@@ -217,10 +217,10 @@ class Lib(object):
         Returns:
             Boolean: boolean of whether successful or not
         """
-    
+
         logger = getLogger('MegaManager_lib.dump_set_into_numpy_file')
         logger.setLevel(self.__log_level)
-    
+
         logger.debug(' Dumping set into "%s".' % file_path)
 
         try:
@@ -354,12 +354,12 @@ class Lib(object):
         Returns:
             string: Size in MegaBytes converted from bytes.
         """
-    
+
         logger = getLogger('Lib.get_mb_size_from_bytes')
         logger.setLevel(self.__log_level)
-    
+
         logger.debug(' Converting kilobytes to megabytes.')
-    
+
         result = ''
         if bytes < 1000:
             result = '%i' % bytes + 'B'
@@ -371,7 +371,7 @@ class Lib(object):
             result = '%.1f' % float(bytes / 1000000000) + 'GB'
         elif 1000000000000 <= bytes:
             result = '%.1f' % float(bytes / 1000000000000) + 'TB'
-    
+
         return result
 
     def get_remote_path_from_local_path(self, localPath, localRoot="{sep}".format(sep=sep), remoteRoot="\\"):
@@ -407,15 +407,15 @@ class Lib(object):
     def get_sleep_time(self):
             """
             Get time in seconds to sleep. Function is used to pace program speed during iterations.
-    
+
             :return: Time in seconds to sleep as integer.
             """
-    
+
             logger = getLogger('megaManager_lib.get_sleep_time')
             logger.setLevel(self.__log_level)
-    
+
             sleepTime = 0
-    
+
             return sleepTime
 
     def get_items_in_list_with_sub_string(self, list, sub_string):
@@ -448,10 +448,10 @@ class Lib(object):
 
         :return:
         """
-    
+
         logger = getLogger('megaManager_lib.kill_running_processes_with_name')
         logger.setLevel(self.__log_level)
-    
+
         logger.info(' Killing processes with name "%s"' % proc_name)
         try:
             # p = Popen(['ps', '-a'], stdout=PIPE)
@@ -530,21 +530,21 @@ class Lib(object):
     def size_of_dir(self, dir_path):
         """
         Walks through the directory, getting the cumulative size of the directory
-    
+
         :param dir_path: Directory to walk through to get size.
         :type dir_path: String.
-    
+
         :return: Size in bytes as integer.
         """
-    
+
         logger = getLogger('Lib.size_of_dir')
         logger.setLevel(self.__log_level)
-    
+
         logger.debug(' Getting size of directory "%s"' % dir_path)
-    
+
         sum = 0
         for file in listdir(dir_path):
-            sum += path.getsize(dir_path + '{sep}'.format(sep=sep) + file)
+            sum += path.getsize(path.join(dir_path,file))
         return sum
 
 
