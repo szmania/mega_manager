@@ -149,24 +149,24 @@ class MegaManager(object):
 
         try:
             if path.exists(local_root):
-                local_files = [path.join(full_path, name) for full_path, subdirs, files in walk(local_root) for name in files]
-            else:
-                raise PathMappingDoesNotExist(' Path mapping does not exist: {}'.format(local_root))
+                for full_path, _, files in walk(local_root):
+                    for name in files:
+                        local_file_path = path.join(full_path, name)
+                        local_file_ext = local_file_path.split('.')[-1]
+                        if local_file_ext in self.__image_temp_file_extensions or search('^.*\.megatmp\..*$', local_file_path):
+                            logger.warning(' File "{}" is temporary file. Deleting.'.format(local_file_path))
+                            self.__lib.delete_local_file(local_file_path)
+                            continue
 
-            if local_files:
-                for local_file_path in local_files:
-                    local_file_ext = local_file_path.split('.')[-1]
-                    if local_file_ext in self.__image_temp_file_extensions or search('^.*\.megatmp\..*$', local_file_path):
-                        logger.warning(' File "{}" is temporary file. Deleting.'.format(local_file_path))
-                        self.__lib.delete_local_file(local_file_path)
-                        continue
+                        for compress_image_ext in self.__compression_image_extensions:
+                            if match(local_file_ext, compress_image_ext, IGNORECASE) and path.isfile(local_file_path):
+                                file_md5_hash = self.__lib.get_file_md5_hash(local_file_path)
+                                if (file_md5_hash not in self.__compressed_image_files) \
+                                        and (file_md5_hash not in self.__unable_to_compress_image_files):
+                                    self._compress_image_file(file_path=local_file_path)
 
-                    for compress_image_ext in self.__compression_image_extensions:
-                        if match(local_file_ext, compress_image_ext, IGNORECASE) and path.isfile(local_file_path):
-                            file_md5_hash = self.__lib.get_file_md5_hash(local_file_path)
-                            if (file_md5_hash not in self.__compressed_image_files) \
-                                    and (file_md5_hash not in self.__unable_to_compress_image_files):
-                                self._compress_image_file(file_path=local_file_path)
+                    else:
+                        raise PathMappingDoesNotExist(' Path mapping does not exist: {}'.format(local_root))
 
             return True
 
@@ -280,9 +280,9 @@ class MegaManager(object):
 
         try:
             if path.exists(local_root):
-                local_files = [path.join(full_path, name) for full_path, subdirs, files in walk(local_root) for name in files]
-                if local_files:
-                    for local_file_path in local_files:
+                for full_path, _, files in walk(local_root):
+                    for name in files:
+                        local_file_path = path.join(full_path, name)
                         if local_file_path.endswith('_NEW.mp4') or search('^.*\.megatmp\..*$', local_file_path):
                             logger.warning(' File "{}" is a temporary file. Deleting.'.format(local_file_path))
                             self.__lib.delete_local_file(local_file_path)
@@ -294,7 +294,6 @@ class MegaManager(object):
                                 file_md5_hash = self.__lib.get_file_md5_hash(local_file_path)
                                 if (file_md5_hash not in self.__compressed_video_files) \
                                     and (file_md5_hash not in self.__unable_to_compress_video_files):
-
                                     self._compress_video_file(file_path=local_file_path)
                 else:
                     logger.warning(' No files found in path: "{}"'.format(local_root))
