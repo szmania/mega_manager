@@ -165,8 +165,8 @@ class MegaManager(object):
                                         and (file_md5_hash not in self.__unable_to_compress_image_files):
                                     self._compress_image_file(file_path=local_file_path)
 
-                    else:
-                        raise PathMappingDoesNotExist(' Path mapping does not exist: {}'.format(local_root))
+            else:
+                raise PathMappingDoesNotExist(' Path mapping does not exist: {}'.format(local_root))
 
             return True
 
