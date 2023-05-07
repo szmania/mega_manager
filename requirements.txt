@@ -1,3 +1,4 @@
+auto-changelog==0.6.0
 configparser==4.0.2
 numpy==1.16.6
 Pillow==6.2.2
