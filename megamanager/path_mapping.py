@@ -4,7 +4,7 @@
 # Initial Creation.
 # Path Mapping class. Used for path mappings.
 ###
-
+import os
 from account import Account
 from logging import getLogger
 
@@ -22,8 +22,8 @@ class PathMapping(Account):
             remote_path (str): Remote path of path mapping.
             log_level (str): Logging level setting ie: "DEBUG" or "WARN"
         """
-        self.__local_path = local_path
-        self.__remote_path = remote_path
+        self.__local_path = os.path.abspath(local_path)
+        self.__remote_path = os.path.abspath(remote_path)
         self.__log_level = log_level
         self.__local_path_free_space = None
         self.__local_path_used_space = None
@@ -53,7 +53,7 @@ class PathMapping(Account):
         """
         logger = getLogger('SyncProfile.local_path')
         logger.setLevel(self.__log_level)
-        self.__local_path = value
+        self.__local_path = os.path.abspath(value)
 
     @property
     def local_path_free_space(self):
@@ -125,7 +125,7 @@ class PathMapping(Account):
         """
         logger = getLogger('SyncProfile.remote_path')
         logger.setLevel(self.__log_level)
-        self.__remote_path = value
+        self.__remote_path = os.path.abspath(value)
 
     @property
     def remote_path_used_space(self):
