@@ -8,7 +8,7 @@ import sys
 from ast import literal_eval
 from datetime import datetime
 from configparser import ConfigParser
-from logging import DEBUG, getLogger, FileHandler, Formatter, StreamHandler
+from logging import DEBUG, getLogger, Formatter, StreamHandler, handlers
 from libs.lib import Lib
 from libs.compress_images_lib import CompressImages_Lib
 from libs.ffmpeg_lib import FFMPEG_Lib
@@ -150,20 +150,21 @@ class MegaManager(object):
         try:
             if path.exists(local_root):
                 for full_path, _, files in walk(local_root):
-                    for name in files:
-                        local_file_path = path.join(full_path, name)
-                        local_file_ext = local_file_path.split('.')[-1]
-                        if local_file_ext in self.__image_temp_file_extensions or search('^.*\.megatmp\..*$', local_file_path):
-                            logger.warning(' File "{}" is temporary file. Deleting.'.format(local_file_path))
-                            self.__lib.delete_local_file(local_file_path)
-                            continue
+                    if files:
+                        for name in files:
+                            local_file_path = path.join(full_path, name)
+                            local_file_ext = local_file_path.split('.')[-1]
+                            if local_file_ext in self.__image_temp_file_extensions or search('^.*\.megatmp\..*$', local_file_path):
+                                logger.warning(' File "{}" is temporary file. Deleting.'.format(local_file_path))
+                                self.__lib.delete_local_file(local_file_path)
+                                continue
 
-                        for compress_image_ext in self.__compression_image_extensions:
-                            if match(local_file_ext, compress_image_ext, IGNORECASE) and path.isfile(local_file_path):
-                                file_md5_hash = self.__lib.get_file_md5_hash(local_file_path)
-                                if (file_md5_hash not in self.__compressed_image_files) \
-                                        and (file_md5_hash not in self.__unable_to_compress_image_files):
-                                    self._compress_image_file(file_path=local_file_path)
+                            for compress_image_ext in self.__compression_image_extensions:
+                                if match(local_file_ext, compress_image_ext, IGNORECASE) and path.isfile(local_file_path):
+                                    file_md5_hash = self.__lib.get_file_md5_hash(local_file_path)
+                                    if (file_md5_hash not in self.__compressed_image_files) \
+                                            and (file_md5_hash not in self.__unable_to_compress_image_files):
+                                        self._compress_image_file(file_path=local_file_path)
 
             else:
                 raise PathMappingDoesNotExist(' Path mapping does not exist: {}'.format(local_root))
@@ -281,20 +282,21 @@ class MegaManager(object):
         try:
             if path.exists(local_root):
                 for full_path, _, files in walk(local_root):
-                    for name in files:
-                        local_file_path = path.join(full_path, name)
-                        if local_file_path.endswith('_NEW.mp4') or search('^.*\.megatmp\..*$', local_file_path):
-                            logger.warning(' File "{}" is a temporary file. Deleting.'.format(local_file_path))
-                            self.__lib.delete_local_file(local_file_path)
-                            continue
+                    if files:
+                        for name in files:
+                            local_file_path = path.join(full_path, name)
+                            if local_file_path.endswith('_NEW.mp4') or search('^.*\.megatmp\..*$', local_file_path):
+                                logger.warning(' File "{}" is a temporary file. Deleting.'.format(local_file_path))
+                                self.__lib.delete_local_file(local_file_path)
+                                continue
 
-                        local_file_ext = local_file_path.split('.')[-1]
-                        for compress_video_ext in self.__compression_video_extensions:
-                            if match(local_file_ext, compress_video_ext, IGNORECASE):
-                                file_md5_hash = self.__lib.get_file_md5_hash(local_file_path)
-                                if (file_md5_hash not in self.__compressed_video_files) \
-                                    and (file_md5_hash not in self.__unable_to_compress_video_files):
-                                    self._compress_video_file(file_path=local_file_path)
+                            local_file_ext = local_file_path.split('.')[-1]
+                            for compress_video_ext in self.__compression_video_extensions:
+                                if match(local_file_ext, compress_video_ext, IGNORECASE):
+                                    file_md5_hash = self.__lib.get_file_md5_hash(local_file_path)
+                                    if (file_md5_hash not in self.__compressed_video_files) \
+                                        and (file_md5_hash not in self.__unable_to_compress_video_files):
+                                        self._compress_video_file(file_path=local_file_path)
                 else:
                     logger.warning(' No files found in path: "{}"'.format(local_root))
 
@@ -941,19 +943,12 @@ class MegaManager(object):
             log_file_path (str):  Log file path.
         """
         print(' Setting up logger using log file: {}'.format(log_file_path))
-        if path.exists(log_file_path):
-            try:
-                remove(log_file_path)
-            except Exception as e:
-                print(' Exception: %s' % str(e))
-                pass
-
         root = getLogger()
-        root.setLevel(DEBUG)
+        root.setLevel(self.__log_level)
 
-        self.__handler = FileHandler(log_file_path)
+        self.__handler = handlers.TimedRotatingFileHandler(log_file_path, when=self.__log_retention,
+                                                           backupCount=self.__log_retention_backup_count)
         formatter = Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
-        # formatter = logging.Formatter(fmt='%(message)s', datefmt='')
         self.__handler.setLevel(DEBUG)
         self.__handler.setFormatter(formatter)
 
