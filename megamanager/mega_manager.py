@@ -71,6 +71,7 @@ class MegaManager(object):
         self.__compression_image_extensions = []
         self.__compression_video_extensions = []
         self.__image_temp_file_extensions = []
+        self.__compression_ffmpeg_video_max_width = None
         self.__compression_ffmpeg_video_preset = None
         self.__removed_remote_files_path = None
         self.__unable_to_compress_images_file_path = None
@@ -149,8 +150,9 @@ class MegaManager(object):
 
         try:
             if path.exists(local_root):
-                for full_path, _, files in walk(local_root):
-                    if files:
+                for walk_path in walk(local_root):
+                    if walk_path:
+                        full_path, _, files = walk_path
                         for name in files:
                             local_file_path = path.join(full_path, name)
                             local_file_ext = local_file_path.split('.')[-1]
@@ -192,6 +194,7 @@ class MegaManager(object):
         temp_file_path = file_path.rsplit(".", 1)[0] + '_NEW.mp4'
 
         result = self.__ffmpeg_lib.compress_video_file(source_path=file_path, target_path=temp_file_path,
+                                                       compression_max_width=self.__compression_ffmpeg_video_max_width,
                                                        compression_preset=self.__compression_ffmpeg_video_preset,
                                                        ffmpeg_threads=self.__ffmpeg_threads, overwrite=True,
                                                        process_priority_class=self.__ffmpeg_process_priority_class,
@@ -281,8 +284,9 @@ class MegaManager(object):
 
         try:
             if path.exists(local_root):
-                for full_path, _, files in walk(local_root):
-                    if files:
+                for walk_path in walk(local_root):
+                    if walk_path:
+                        full_path, _, files = walk_path
                         for name in files:
                             local_file_path = path.join(full_path, name)
                             if local_file_path.endswith('_NEW.mp4') or search('^.*\.megatmp\..*$', local_file_path):
