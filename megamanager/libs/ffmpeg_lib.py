@@ -66,8 +66,8 @@ class FFMPEG_Lib(object):
                     print(' Exception: %s' % str(e))
                     pass
 
-        cmd = 'ffmpeg -i "{source_path}" -vf "scale=\'if(lte(iw,{compression_max_width}), {compression_max_width}, iw)\':-2"' \ 
-              '-preset {preset} -threads {ffmpeg_threads} -max_muxing_queue_size 9999 "{target_path}"'.format(
+        cmd = ('ffmpeg -i "{source_path}" -vf "scale=\'if(lte(iw,{compression_max_width}), {compression_max_width}, iw)\':-2" '
+               '-preset {preset} -threads {ffmpeg_threads} -max_muxing_queue_size 9999 "{target_path}"').format(
             source_path=source_path, compression_max_width=compression_max_width, preset=compression_preset,
             ffmpeg_threads=ffmpeg_threads, target_path=target_path)
 
