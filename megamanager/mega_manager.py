@@ -1231,7 +1231,7 @@ class MegaManager(object):
             else:
                 logger.debug(' TIMED OUT waiting for threads to complete! Timeout %d (seconds)' % timeout)
                 return
-            sleep(5)
+            sleep(10)
 
     def get_mega_manager_log_file(self):
         """

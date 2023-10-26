@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 0.2.1 (2023-10-25)
+### Bugs
+- Changed to 10 seconds between searches for finished threads
 
 ## Version 0.2.0 (2023-10-25)
 ### Bugs
