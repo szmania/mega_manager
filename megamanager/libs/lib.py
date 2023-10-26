@@ -192,7 +192,7 @@ class Lib(object):
         logger.debug(' Deleting local file: {}'.format(file_path))
 
         if path.exists(file_path):
-            for retry in range(100):
+            for retry in range(10):
                 try:
                     remove(file_path)
                     logger.debug(' File deleted!')

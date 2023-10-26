@@ -421,7 +421,7 @@ class MegaManager(object):
         Create thread to compress image files.
 
         Args:
-            sync_profiles (SyncProfile): SyncProfiles objects
+            sync_profiles (list): SyncProfiles objects
 
         Returns:
             Boolean: Whether successful or not.
@@ -446,7 +446,7 @@ class MegaManager(object):
         Create thread to compress video files.
 
         Args:
-            sync_profiles (SyncProfile): SyncProfile objects
+            sync_profiles (list): SyncProfile objects
 
         Returns:
             Boolean: Whether successful or not.
@@ -950,17 +950,17 @@ class MegaManager(object):
         root = getLogger()
         root.setLevel(self.__log_level)
 
-        self.__handler = handlers.TimedRotatingFileHandler(log_file_path, when=self.__log_retention,
+        file_handler = handlers.TimedRotatingFileHandler(log_file_path, when=self.__log_retention,
                                                            backupCount=self.__log_retention_backup_count)
         formatter = Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
-        self.__handler.setLevel(DEBUG)
-        self.__handler.setFormatter(formatter)
+        file_handler.setLevel(DEBUG)
+        file_handler.setFormatter(formatter)
 
         ch = StreamHandler(stdout)
         ch.setLevel(self.__log_level)
         ch.setFormatter(formatter)
 
-        root.addHandler(self.__handler)
+        root.addHandler(file_handler)
         root.addHandler(ch)
 
         logger = getLogger('MegaManager._setup_logger')
@@ -991,7 +991,7 @@ class MegaManager(object):
                 self.__lib.dump_set_into_numpy_file(item_set=self.__unable_to_compress_video_files,
                                                     file_path=self.__unable_to_compress_videos_file_path)
 
-            self._remove_temp_files()
+            # self._remove_temp_files()
 
             megacopy_process_name = 'megacopy.exe' if system() == 'Windows' else 'megacopy'
             self.__lib.kill_running_processes_with_name(megacopy_process_name)
@@ -1207,7 +1207,7 @@ class MegaManager(object):
             totalRemoteSize += pathMappingRemoteSize
         return profile
 
-    def _wait_for_threads_to_finish(self, threads=None, timeout=9999999):
+    def _wait_for_threads_to_finish(self, threads=None, timeout=None):
         """
         Wait for threads to finish.
 
@@ -1222,15 +1222,16 @@ class MegaManager(object):
         start_time = time()
 
         while len(threads) > 0:
-            if not time() - start_time > timeout:
+            if (timeout and not time() - start_time > timeout) or not timeout:
                 for thread in threads:
                     if not thread.isAlive():
                         threads.remove(thread)
                         logger.info(' Thread "%s" finished!' % thread.name)
                         logger.debug(' Threads left: %d' % len(threads))
             else:
-                logger.debug(' Waiting for threads to complete TIMED OUT! Timeout %d (seconds)' % timeout)
+                logger.debug(' TIMED OUT waiting for threads to complete! Timeout %d (seconds)' % timeout)
                 return
+            sleep(5)
 
     def get_mega_manager_log_file(self):
         """
@@ -1270,7 +1271,6 @@ class MegaManager(object):
 
                 non_profile_threads = list(self.__threads)
                 for profile in sync_profiles_randomized:
-
                     if self.__mega_manager_output_profile_data_path:
                         self._create_thread_output_profile_data(profile=profile)
 
