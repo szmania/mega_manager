@@ -167,6 +167,8 @@ class MegaManager(object):
                                     if (file_md5_hash not in self.__compressed_image_files) \
                                             and (file_md5_hash not in self.__unable_to_compress_image_files):
                                         self._compress_image_file(file_path=local_file_path)
+                                    else:
+                                        logger.debug(' Image file already compressed or previously unable to compress: "{}"'.format(local_file_path))
 
             else:
                 raise PathMappingDoesNotExist(' Path mapping does not exist: {}'.format(local_root))
@@ -301,6 +303,8 @@ class MegaManager(object):
                                     if (file_md5_hash not in self.__compressed_video_files) \
                                         and (file_md5_hash not in self.__unable_to_compress_video_files):
                                         self._compress_video_file(file_path=local_file_path)
+                                    else:
+                                        logger.debug(' Video file already compressed or previously unable to compress: "{}"'.format(local_file_path))
                 else:
                     logger.warning(' No files found in path: "{}"'.format(local_root))
 
