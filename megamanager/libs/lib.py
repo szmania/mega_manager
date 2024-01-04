@@ -110,12 +110,12 @@ class Lib(object):
                 if system() == 'Windows':
                     proc.nice(psutil.IDLE_PRIORITY_CLASS)
                 else:
-                    proc.nice(-20)
+                    proc.nice(20)
             elif priority_class == 'BELOW_NORMAL_PRIORITY_CLASS':
                 if system() == 'Windows':
                     proc.nice(psutil.BELOW_NORMAL_PRIORITY_CLASS)
                 else:
-                    proc.nice(-10)
+                    proc.nice(10)
             elif priority_class == 'NORMAL_PRIORITY_CLASS':
                 if system() == 'Windows':
                     proc.nice(psutil.NORMAL_PRIORITY_CLASS)
@@ -125,17 +125,17 @@ class Lib(object):
                 if system() == 'Windows':
                     proc.nice(psutil.ABOVE_NORMAL_PRIORITY_CLASS)
                 else:
-                    proc.nice(5)
+                    proc.nice(-5)
             elif priority_class == 'HIGH_PRIORITY_CLASS':
                 if system() == 'Windows':
                     proc.nice(psutil.HIGH_PRIORITY_CLASS)
                 else:
-                    proc.nice(10)
+                    proc.nice(-10)
             elif priority_class == 'REALTIME_PRIORITY_CLASS':
                 if system() == 'Windows':
                     proc.nice(psutil.REALTIME_PRIORITY_CLASS)
                 else:
-                    proc.nice(20)
+                    proc.nice(-20)
             else:
                 logger.warning('Error, invalid priority class: {}'.format(priority_class))
                 return False
