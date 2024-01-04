@@ -281,7 +281,7 @@ class Lib(object):
         except Exception as e:
             logger.warning(' Exception: {}'.format(e))
 
-        logger.warning(' Error when running command "%s".' % command)
+        logger.error(' Error when running command "%s".' % command)
         return False
 
     def exec_cmd_and_return_output(self, command, working_dir=None, output_file=None):
