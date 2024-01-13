@@ -953,7 +953,6 @@ class MegaManager(object):
         print(' Setting up logger using log file: {}'.format(log_file_path))
         root = getLogger()
         root.setLevel(self.__log_level)
-
         file_handler = handlers.TimedRotatingFileHandler(log_file_path, when=self.__log_retention,
                                                            backupCount=self.__log_retention_backup_count)
         formatter = Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
