@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.3.0 (2024-11-27)
+### Bugs
+- Fixed various bugs.
+
+
 ## Version 0.3.0 (2024-01-03)
 ### Bugs
 - Fixed bug with reversed nice levels for ffmpeg process, for linux systems.
