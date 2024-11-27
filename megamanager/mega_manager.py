@@ -134,12 +134,12 @@ class MegaManager(object):
                                                 file_path=self.__unable_to_compress_images_file_path)
             return False
 
-    def _compress_image_files(self, local_root):
+    def _compress_image_files(self, file_list):
         """
         Find image files to compress.
 
         Args:
-            local_root (str): Local path to search for image files to compress
+            file_list (list[str]): List of all files to compress.
 
         Returns:
             Boolean: Returns whether operation was successful or not.
@@ -149,30 +149,30 @@ class MegaManager(object):
         logger.debug(' Compressing image files.')
 
         try:
-            if path.exists(local_root):
-                for walk_path in walk(local_root):
-                    if walk_path:
-                        full_path, _, files = walk_path
-                        for name in files:
-                            local_file_path = path.join(full_path, name)
-                            local_file_ext = local_file_path.split('.')[-1]
-                            if local_file_ext in self.__image_temp_file_extensions or search('^.*\.megatmp\..*$', local_file_path):
-                                logger.warning(' File "{}" is temporary file. Deleting.'.format(local_file_path))
-                                self.__lib.delete_local_file(local_file_path)
-                                continue
+            for local_file_path in file_list:
+                local_file_ext = local_file_path.split('.')[-1]
+                if local_file_ext.lower() in self.__compression_image_extensions:
+                    while not path.exists(local_file_path):
+                        sleep(1)
+            # if path.exists(local_root):
+            #     for walk_path in walk(local_root):
+            #         if walk_path:
+            #             full_path, _, files = walk_path
+            #             for name in files:
+            #                 local_file_path = path.join(full_path, name)
+                    if local_file_ext in self.__image_temp_file_extensions or search('^.*\.megatmp\..*$', local_file_path):
+                        logger.warning(' File "{}" is temporary file. Deleting.'.format(local_file_path))
+                        self.__lib.delete_local_file(local_file_path)
+                        continue
 
-                            for compress_image_ext in self.__compression_image_extensions:
-                                if match(local_file_ext, compress_image_ext, IGNORECASE) and path.isfile(local_file_path):
-                                    file_md5_hash = self.__lib.get_file_md5_hash(local_file_path)
-                                    if (file_md5_hash not in self.__compressed_image_files) \
-                                            and (file_md5_hash not in self.__unable_to_compress_image_files):
-                                        self._compress_image_file(file_path=local_file_path)
-                                    else:
-                                        logger.debug(' Image file already compressed or previously unable to compress: "{}"'.format(local_file_path))
+                    file_md5_hash = self.__lib.get_file_md5_hash(local_file_path)
+                    if (file_md5_hash not in self.__compressed_image_files) \
+                            and (file_md5_hash not in self.__unable_to_compress_image_files):
+                        self._compress_image_file(file_path=local_file_path)
+                    else:
+                        logger.debug(' Image file already compressed or previously unable to compress: "{}"'.format(local_file_path))
 
-            else:
-                raise PathMappingDoesNotExist(' Path mapping does not exist: {}'.format(local_root))
-
+            logger.debug(' Success, finished compressing image files.')
             return True
 
         except Exception as e:
@@ -270,49 +270,45 @@ class MegaManager(object):
 
         logger.debug(' Successfully completed video file compression teardown.')
 
-    def _compress_video_files(self, local_root):
+    def _compress_video_files(self, file_list):
         """
         Find video files to compress.
 
         Args:
-            local_root (str): Local path to search for image files to compress
+            file_list (list[str]): List of all files to compress.
 
         Returns:
             Boolean: Whether operation is successful or not.
         """
         logger = getLogger('MegaManager._compress_video_files')
         logger.setLevel(self.__log_level)
-        logger.debug(' Finding video files to compress in: "{}"'.format(local_root))
-
+        logger.debug(' Finding video files to compress.')
         try:
-            if path.exists(local_root):
-                for walk_path in walk(local_root):
-                    if walk_path:
-                        full_path, _, files = walk_path
-                        for name in files:
-                            local_file_path = path.join(full_path, name)
-                            if local_file_path.endswith('_NEW.mp4') or search('^.*\.megatmp\..*$', local_file_path):
-                                logger.warning(' File "{}" is a temporary file. Deleting.'.format(local_file_path))
-                                self.__lib.delete_local_file(local_file_path)
-                                continue
+            for local_file_path in file_list:
+                local_file_ext = local_file_path.split('.')[-1]
+                if local_file_ext.lower() in self.__compression_video_extensions:
+                    while not path.exists(local_file_path):
+                        sleep(1)
 
-                            local_file_ext = local_file_path.split('.')[-1]
-                            for compress_video_ext in self.__compression_video_extensions:
-                                if match(local_file_ext, compress_video_ext, IGNORECASE):
-                                    file_md5_hash = self.__lib.get_file_md5_hash(local_file_path)
-                                    if (file_md5_hash not in self.__compressed_video_files) \
-                                        and (file_md5_hash not in self.__unable_to_compress_video_files):
-                                        self._compress_video_file(file_path=local_file_path)
-                                    else:
-                                        logger.debug(' Video file already compressed or previously unable to compress: "{}"'.format(local_file_path))
-                else:
-                    logger.warning(' No files found in path: "{}"'.format(local_root))
+                # for walk_path in walk(local_root):
+                #     if walk_path:
+                #         dir_path, _, files = walk_path
+                #         shuffle(files)
+                #         for name in files:
+                #             local_file_path = path.join(dir_path, name)
+                    if local_file_path.endswith('_NEW.mp4') or search('^.*\.megatmp\..*$', local_file_path):
+                        logger.warning(' File "{}" is a temporary file. Deleting.'.format(local_file_path))
+                        self.__lib.delete_local_file(local_file_path)
+                        continue
 
-                logger.debug(' Success, finished finding video files to compress in: "{}"'.format(local_root))
-                return True
-            else:
-                raise PathMappingDoesNotExist(' Path mapping does not exist: "{}"'.format(local_root))
-
+                    file_md5_hash = self.__lib.get_file_md5_hash(local_file_path)
+                    if (file_md5_hash not in self.__compressed_video_files) \
+                        and (file_md5_hash not in self.__unable_to_compress_video_files):
+                        self._compress_video_file(file_path=local_file_path)
+                    else:
+                        logger.debug(' Video file already compressed or previously unable to compress: "{}"'.format(local_file_path))
+            logger.debug(' Success, finished compressing video files.')
+            return True
         except Exception as e:
             logger.warning(' Exception: {}'.format(e))
             return False
@@ -420,12 +416,12 @@ class MegaManager(object):
             logger.error(' Exception: {}'.format(e))
             return False
 
-    def _create_thread_compress_image_files(self, sync_profiles):
+    def _create_thread_compress_image_files(self, file_list):
         """
         Create thread to compress image files.
 
         Args:
-            sync_profiles (list): SyncProfiles objects
+            file_list (list[str]): List of files to compress.
 
         Returns:
             Boolean: Whether successful or not.
@@ -437,7 +433,7 @@ class MegaManager(object):
         logger.debug(' Creating thread to compress local image files')
 
         try:
-            t_compress = Thread(target=self._thread_sync_profiles_image_compression, args=(sync_profiles,), name='thread_compress_images')
+            t_compress = Thread(target=self._compress_image_files, args=(file_list,), name='thread_compress_images')
             self.__threads.append(t_compress)
             t_compress.start()
             return True
@@ -445,12 +441,12 @@ class MegaManager(object):
             logger.error(' Exception: {}'.format(e))
             return False
 
-    def _create_thread_compress_video_files(self, sync_profiles):
+    def _create_thread_compress_video_files(self, file_list):
         """
         Create thread to compress video files.
 
         Args:
-            sync_profiles (list): SyncProfile objects
+            file_list (list[str]): List of files to compress.
 
         Returns:
             Boolean: Whether successful or not.
@@ -462,7 +458,7 @@ class MegaManager(object):
         logger.debug(' Creating thread to compress local video files.')
 
         try:
-            t_compress = Thread(target=self._thread_sync_profiles_video_compression, args=(sync_profiles,), name='thread_compress_videos')
+            t_compress = Thread(target=self._compress_video_files, args=(file_list,), name='thread_compress_videos')
             self.__threads.append(t_compress)
             t_compress.start()
             return True
@@ -552,6 +548,19 @@ class MegaManager(object):
             logger.warning(' Exception: %s' % str(e))
 
         return foundUserPass
+
+    def _get_all_files(self, root_path):
+        logger = getLogger('MegaManager._get_all_files')
+        logger.setLevel(self.__log_level)
+        logger.debug(' Getting all files in root path: {root_path}'.format(root_path=root_path))
+
+        all_files = []
+        for root, dirs, files in walk(root_path):
+            for file in files:
+                full_path = path.join(root, file)
+                all_files.append(full_path)
+        logger.debug(' Retrieved all files in root path: {root_path}. Total number of files: {files}'.format(root_path=root_path, files=len(all_files)))
+        return all_files
 
     def _get_profile_data(self, profile):
         """
@@ -938,6 +947,8 @@ class MegaManager(object):
             self.__compressed_image_files = self.__lib.load_numpy_file_as_set(file_path=self.__compressed_images_file_path)
             self.__unable_to_compress_image_files = self.__lib.load_numpy_file_as_set(
                 file_path=self.__unable_to_compress_images_file_path)
+            self.__compression_video_extensions = [ext.lower() for ext in self.__compression_video_extensions]
+            self.__compression_image_extensions = [ext.lower() for ext in self.__compression_image_extensions]
 
         except Exception as e:
             print(' Exception: ' + str(e))
@@ -1085,54 +1096,6 @@ class MegaManager(object):
             self._remove_outdated_files(username=username, password=password, local_root=local_root, remote_root=remote_root)
             self._remove_remote_files_that_dont_exist_locally(username=username, password=password, local_root=local_root,
                                                               remote_root=remote_root)
-
-    def _thread_sync_profiles_image_compression(self, sync_profiles):
-        """
-        Compress image.
-
-        Args:
-            sync_profiles (SyncProfile): syncProfile objects
-
-        Returns:
-            Boolean: Whether successful or not.
-        """
-        logger = getLogger('MegaManager._thread_sync_profiles_image_compression')
-        logger.setLevel(self.__log_level)
-        logger.debug(' Compressing local image files')
-
-        try:
-            for profile in sync_profiles:
-                for path_mapping in profile.path_mappings:
-                    logger.debug(' Compressing image files for profile: "{}"'.format(profile.profile_name))
-                    self._compress_image_files(local_root=path_mapping.local_path)
-            return True
-        except Exception as e:
-            logger.warning(' Exception: {}'.format(e))
-            return False
-
-    def _thread_sync_profiles_video_compression(self, syncProfiles):
-        """
-        Compress video.
-
-        Args:
-            syncProfiles (SyncProfile): syncProfile objects
-
-        Returns:
-            Boolean: Whether successful or not.
-        """
-
-        logger = getLogger('MegaManager._thread_syncprofiles_video_compression')
-        logger.setLevel(self.__log_level)
-        logger.debug(' Compressing local video files')
-        try:
-            for profile in syncProfiles:
-                for pathMapping in profile.path_mappings:
-                    self._compress_video_files(local_root=pathMapping.local_path)
-            return True
-        except Exception as e:
-            logger.warning(' Exception: {}'.format(e))
-            return False
-
     def _thread_upload_profile_files(self, profile):
         """
         Upload to all MEGA profile accounts.
@@ -1264,13 +1227,24 @@ class MegaManager(object):
             while True:
                 sync_profiles_randomized = self.__sync_profiles[:]
                 shuffle(sync_profiles_randomized)
-                if self.__compress_all:
-                    self._create_thread_compress_image_files(sync_profiles=sync_profiles_randomized)
-                    self._create_thread_compress_video_files(sync_profiles=sync_profiles_randomized)
-                elif self.__compress_images:
-                    self._create_thread_compress_image_files(sync_profiles=sync_profiles_randomized)
-                elif self.__compress_videos:
-                    self._create_thread_compress_video_files(sync_profiles=sync_profiles_randomized)
+                for profile in sync_profiles_randomized:
+                    for pathMapping in profile.path_mappings:
+                        if not path.exists(pathMapping.local_path):
+                            logger.warning(' No files found in path: "{}"'.format(pathMapping.local_path))
+                            raise PathMappingDoesNotExist(' Path mapping does not exist: "{}"'.format(pathMapping.local_path))
+                        if self.__compress_all:
+                            file_list = self._get_all_files(root_path=pathMapping.local_path)
+                            shuffle(file_list)
+                            self._create_thread_compress_image_files(file_list=file_list)
+                            self._create_thread_compress_video_files(file_list=file_list)
+                        elif self.__compress_images:
+                            file_list = self._get_all_files(root_path=pathMapping.local_path)
+                            shuffle(file_list)
+                            self._create_thread_compress_image_files(file_list=file_list)
+                        elif self.__compress_videos:
+                            file_list = self._get_all_files(root_path=pathMapping.local_path)
+                            shuffle(file_list)
+                            self._create_thread_compress_video_files(file_list=file_list)
 
                 non_profile_threads = list(self.__threads)
                 for profile in sync_profiles_randomized:
