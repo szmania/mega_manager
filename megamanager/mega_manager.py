@@ -553,13 +553,12 @@ class MegaManager(object):
         logger = getLogger('MegaManager._get_all_files')
         logger.setLevel(self.__log_level)
         logger.debug(' Getting all files in root path: {root_path}'.format(root_path=root_path))
-
         all_files = []
         for root, dirs, files in walk(root_path):
             for file in files:
                 full_path = path.join(root, file)
                 all_files.append(full_path)
-        logger.debug(' Retrieved all files in root path: {root_path}. Total number of files: {files}'.format(root_path=root_path, files=len(all_files)))
+        logger.debug(' Retrieved all files in root path: "{root_path}". Total number of files: "{files}"'.format(root_path=root_path, files=len(all_files)))
         return all_files
 
     def _get_profile_data(self, profile):
@@ -1230,7 +1229,7 @@ class MegaManager(object):
                 for profile in sync_profiles_randomized:
                     for pathMapping in profile.path_mappings:
                         if not path.exists(pathMapping.local_path):
-                            logger.warning(' No files found in path: "{}"'.format(pathMapping.local_path))
+                            logger.error(' No files found in path: "{}"'.format(pathMapping.local_path))
                             raise PathMappingDoesNotExist(' Path mapping does not exist: "{}"'.format(pathMapping.local_path))
                         if self.__compress_all:
                             file_list = self._get_all_files(root_path=pathMapping.local_path)
