@@ -191,11 +191,11 @@ class MegaManager(object):
         logger.debug(' Compressing video file: "{}"'.format(file_path))
         temp_file_path = file_path.rsplit(".", 1)[0] + '_NEW.mp4'
         orig_file_path = file_path
-        logger.debug(f' Copying video file from "{orig_file_path}" to {file_path}.')
         temp_dir = tempfile.gettempdir()
         file_path = path.join(temp_dir, path.basename(orig_file_path))
+        logger.debug(f' Copying video file from "{orig_file_path}" to "{file_path}".')
         shutil.copy(orig_file_path, file_path)
-        logger.debug(f' Finished copying video file from "{orig_file_path}" to {file_path}.')
+        logger.debug(f' Finished copying video file from "{orig_file_path}" to "{file_path}".')
         result = self.__ffmpeg_lib.compress_video_file(source_path=file_path, target_path=temp_file_path,
                                                        compression_max_width=self.__compression_ffmpeg_video_max_width,
                                                        compression_preset=self.__compression_ffmpeg_video_preset,
