@@ -17,7 +17,7 @@ setup(
         'Programming Language :: Python :: 2',
     ],
     keywords=['megamanager', 'mega', 'mega.co.nz', 'mega.nz', 'cloud', 'compression'],
-    python_requires='>=2.7,<3.0',
+    python_requires='>=3.10',
     packages=["megamanager"],
     install_requires=['numpy', 'psutil'],
     entry_points={
