@@ -4,10 +4,13 @@
 # Initial Creation
 ###
 
+import tempfile
+import shutil
 import sys
 from ast import literal_eval
 from datetime import datetime
 from configparser import ConfigParser
+from importlib import reload  # Import reload from importlib in Python 3
 from logging import DEBUG, getLogger, Formatter, StreamHandler, handlers
 from libs.lib import Lib
 from libs.compress_images_lib import CompressImages_Lib
@@ -26,7 +29,6 @@ from time import sleep, time
 
 
 reload(sys)
-sys.setdefaultencoding('utf-8')
 
 __author__ = 'szmania'
 
@@ -154,12 +156,6 @@ class MegaManager(object):
                 if local_file_ext.lower() in self.__compression_image_extensions:
                     while not path.exists(local_file_path):
                         sleep(1)
-            # if path.exists(local_root):
-            #     for walk_path in walk(local_root):
-            #         if walk_path:
-            #             full_path, _, files = walk_path
-            #             for name in files:
-            #                 local_file_path = path.join(full_path, name)
                     if local_file_ext in self.__image_temp_file_extensions or search('^.*\.megatmp\..*$', local_file_path):
                         logger.warning(' File "{}" is temporary file. Deleting.'.format(local_file_path))
                         self.__lib.delete_local_file(local_file_path)
@@ -194,7 +190,12 @@ class MegaManager(object):
 
         logger.debug(' Compressing video file: "{}"'.format(file_path))
         temp_file_path = file_path.rsplit(".", 1)[0] + '_NEW.mp4'
-
+        orig_file_path = file_path
+        logger.debug(f' Copying video file from "{orig_file_path}" to {file_path}.')
+        temp_dir = tempfile.gettempdir()
+        file_path = path.join(temp_dir, path.basename(orig_file_path))
+        shutil.copy(orig_file_path, file_path)
+        logger.debug(f' Finished copying video file from "{orig_file_path}" to {file_path}.')
         result = self.__ffmpeg_lib.compress_video_file(source_path=file_path, target_path=temp_file_path,
                                                        compression_max_width=self.__compression_ffmpeg_video_max_width,
                                                        compression_preset=self.__compression_ffmpeg_video_preset,
@@ -202,7 +203,7 @@ class MegaManager(object):
                                                        process_priority_class=self.__ffmpeg_process_priority_class,
                                                        process_set_priority_timeout=self.__process_set_priority_timeout)
 
-        self._compress_video_file_teardown(result, file_path, temp_file_path)
+        self._compress_video_file_teardown(result, orig_file_path, file_path, temp_file_path)
         return result
 
     def _compress_video_file_setup(self, file_path, temp_file_path):
@@ -224,14 +225,15 @@ class MegaManager(object):
             if path.exists(possible_prev_file_path):
                 self.__lib.delete_local_file(file_path=possible_prev_file_path)
 
-    def _compress_video_file_teardown(self, result, file_path, temp_file_path):
+    def _compress_video_file_teardown(self, result, orig_file_path, file_path, temp_file_path):
         """
         Teardown for compress video file.
 
         Args:
             result (bool): Result of video file compression.
-            file_path (str): File path to compress.
-            temp_file_path (str): Temporary file path.
+            orig_file_path (str): Original file path to compress.
+            file_path (str): Temporary file path to compress.
+            temp_file_path (str): Temporary compress destination file path.
         """
         logger = getLogger('MegaManager._compress_video_file_teardown')
         logger.setLevel(self.__log_level)
@@ -243,15 +245,19 @@ class MegaManager(object):
             if path.exists(file_path):
                 self.__lib.delete_local_file(file_path=file_path)
 
-            new_file_path = sub('_NEW', '', temp_file_path)
+            dir_path = path.dirname(orig_file_path)
+            new_file_path = path.join(dir_path, sub('_NEW', '', path.basename(temp_file_path)))
             if path.exists(new_file_path):
                 self.__lib.delete_local_file(file_path=new_file_path)
+
+            if path.exists(orig_file_path):
+                self.__lib.delete_local_file(file_path=orig_file_path)
 
             if not self.__lib.rename_file(old_name=temp_file_path, new_name=new_file_path):
                 self.__lib.delete_local_file(file_path=temp_file_path)
 
             logger.debug(' Video file compressed successfully "%s" into "%s"!' % (
-                file_path, new_file_path))
+                orig_file_path, new_file_path))
             file_md5_hash = self.__lib.get_file_md5_hash(new_file_path)
             self.__compressed_video_files.add(file_md5_hash)
             self.__lib.dump_set_into_numpy_file(item_set=self.__compressed_video_files, file_path=self.__compressed_videos_file_path)
@@ -289,13 +295,6 @@ class MegaManager(object):
                 if local_file_ext.lower() in self.__compression_video_extensions:
                     while not path.exists(local_file_path):
                         sleep(1)
-
-                # for walk_path in walk(local_root):
-                #     if walk_path:
-                #         dir_path, _, files = walk_path
-                #         shuffle(files)
-                #         for name in files:
-                #             local_file_path = path.join(dir_path, name)
                     if local_file_path.endswith('_NEW.mp4') or search('^.*\.megatmp\..*$', local_file_path):
                         logger.warning(' File "{}" is a temporary file. Deleting.'.format(local_file_path))
                         self.__lib.delete_local_file(local_file_path)
@@ -533,7 +532,7 @@ class MegaManager(object):
         foundUserPass = []
 
         try:
-            with open(file, "r") as ins:
+            with open(file, "r", encoding='utf-8') as ins:
                 for line in ins:
                     dict = {}
                     if len(findall('-', line)) > 0 and len(findall('@', line)) > 0:

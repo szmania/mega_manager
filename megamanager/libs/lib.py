@@ -255,24 +255,19 @@ class Lib(object):
         logger.debug(' Executing command: "%s"' % command)
 
         try:
-            if output_file:
-                out_file = open(output_file, 'a')
-            else:
-                out_file = None
-
             if working_dir:
                 chdir(working_dir)
 
             if process_priority_class:
                 self._set_priority_once_proc_starts(process_name=process_name, priority_class=process_priority_class,
                                                     process_set_priority_timeout=process_set_priority_timeout)
+            with open(output_file, 'a') as out_file:
+                if no_window and system() == 'Windows':
+                    CREATE_NO_WINDOW = 0x08000000
+                    exit_code = call(shlex.split(command), stdout=out_file, stderr=out_file, creationflags=CREATE_NO_WINDOW)
 
-            if no_window and system() == 'Windows':
-                CREATE_NO_WINDOW = 0x08000000
-                exit_code = call(shlex.split(command), stdout=out_file, stderr=out_file, creationflags=CREATE_NO_WINDOW)
-
-            else:
-                exit_code = call(shlex.split(command),  stdout=out_file, stderr=out_file)
+                else:
+                    exit_code = call(shlex.split(command),  stdout=out_file, stderr=out_file)
 
             if exit_code == 0:
                 logger.debug(' Successfully executed command "%s".' % command)
@@ -310,8 +305,8 @@ class Lib(object):
             proc = Popen(shlex.split(command), stdout=PIPE, stderr=PIPE)
             (out, err) = proc.communicate()
             if output_file:
-                out_file = open(output_file, 'a')
-                out_file.write(out)
+                with open(output_file, 'a') as out_file:
+                    out_file.write(out)
         except Exception as e:
             logger.warning(' Exception: %s' % str(e))
             return None, None
@@ -332,12 +327,12 @@ class Lib(object):
         logger.debug(' Getting md5 hash of file: "{}"'.format(file_path))
 
         try:
-            # test = md5(file_path).hexdigest()
-            # hash_md5 = md5()
-            # with open(file_path, "rb") as f:
-            #     for chunk in iter(lambda: f.read(4096), b""):
-            #         hash_md5.update(chunk)
-            file_md5_hash = md5(file_path).hexdigest()
+            hash_md5 = md5()
+            with open(file_path, "rb") as f:  # Open the file in binary mode
+                for chunk in iter(lambda: f.read(4096), b""):  # Read file in chunks of 4096 bytes
+                    hash_md5.update(chunk)
+            file_md5_hash = hash_md5.hexdigest()
+            # file_md5_hash = md5(file_path).hexdigest()
             logger.debug(' md5 hash of file is: "{}"'.format(file_md5_hash))
             return file_md5_hash
         except Exception as e:
@@ -516,7 +511,7 @@ class Lib(object):
         logger.debug(' Renaming file "{}" to "{}."'.format(old_name, new_name))
         for retry in range(100):
             try:
-                rename(old_name, new_name)
+                shutil.move(old_name, new_name)
                 logger.debug(' Rename succeeded!')
                 return True
 

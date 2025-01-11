@@ -3,7 +3,7 @@
 # Date: 6/5/2017
 # Initial Creation.
 ###
-from lib import Lib
+from libs.lib import Lib
 from logging import getLogger
 from os import path
 from re import IGNORECASE, match
@@ -13,7 +13,7 @@ from tools.compressImages import CompressImage, DeleteBackupImage
 __author__ = 'szmania'
 
 
-class CompressImages_Lib(object):
+class CompressImages_Lib:
     def __init__(self, log_level='DEBUG'):
         """
         Library for compressImages.py interaction.
