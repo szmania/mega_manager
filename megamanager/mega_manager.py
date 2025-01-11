@@ -557,7 +557,7 @@ class MegaManager(object):
             for file in files:
                 full_path = path.join(root, file)
                 all_files.append(full_path)
-        logger.debug(' Retrieved all files in root path: "{root_path}". Total number of files: "{files}"'.format(root_path=root_path, files=len(all_files)))
+        logger.debug(' Retrieved all files in root path: "{root_path}". Total number of files: {files}'.format(root_path=root_path, files=len(all_files)))
         return all_files
 
     def _get_profile_data(self, profile):
