@@ -3,16 +3,16 @@
 # Date: 5/31/2017
 # Initial Creation.
 ###
-
+import psutil
+import shlex
+import shutil
 from hashlib import md5
 from logging import getLogger
 from numpy import array, load, save
 from os import chdir, kill, listdir, path, remove, rename, sep
 from platform import system
-import psutil
 from re import split, sub
 from signal import SIGTERM
-import shlex
 from subprocess import call, PIPE, Popen
 from threading import Thread
 from time import localtime, sleep, strftime, time
