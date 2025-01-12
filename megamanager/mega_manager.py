@@ -37,6 +37,8 @@ HOME_DIRECTORY = path.expanduser("~")
 
 # SLEEP_TIME_BETWEEN_RUNS_SECONDS = 300  # 5 minutes
 WORKING_DIR = path.dirname(path.realpath(__file__))
+MAX_PATH_MAPPING_EXIST_ATTEMPTS = 100
+PATH_MAPPING_TIMEOUT_SECONDS = 5
 
 
 class ConfigError(Exception):
@@ -1227,9 +1229,15 @@ class MegaManager(object):
                 shuffle(sync_profiles_randomized)
                 for profile in sync_profiles_randomized:
                     for pathMapping in profile.path_mappings:
-                        if not path.exists(pathMapping.local_path):
-                            logger.error(' No files found in path: "{}"'.format(pathMapping.local_path))
-                            raise PathMappingDoesNotExist(' Path mapping does not exist: "{}"'.format(pathMapping.local_path))
+                        attempt = 0
+                        while not path.exists(pathMapping.local_path):
+                            attempt+=1
+                            if attempt >= MAX_PATH_MAPPING_EXIST_ATTEMPTS:
+                                logger.error(' No files found in path: "{}"'.format(pathMapping.local_path))
+                                raise PathMappingDoesNotExist(' Path mapping does not exist: "{}"'.format(pathMapping.local_path))
+                            logger.warning(f' Waiting for path mapping to exist. Attempt {attempt}: {pathMapping.local_path}')
+                            sleep(PATH_MAPPING_TIMEOUT_SECONDS)
+                        logger.warning(f' Path mapping exists: {pathMapping.local_path}')
                         if self.__compress_all:
                             file_list = self._get_all_files(root_path=pathMapping.local_path)
                             shuffle(file_list)
