@@ -191,21 +191,21 @@ class MegaManager(object):
         logger.setLevel(self.__log_level)
 
         logger.debug(' Compressing video file: "{}"'.format(file_path))
-        temp_file_path = file_path.rsplit(".", 1)[0] + '_NEW.mp4'
+        new_file_path = file_path.rsplit(".", 1)[0] + '_NEW.mp4'
         orig_file_path = file_path
         temp_dir = tempfile.gettempdir()
-        file_path = path.join(temp_dir, path.basename(orig_file_path))
+        temp_file_path = path.join(temp_dir, path.basename(orig_file_path))
         logger.debug(f' Copying video file from "{orig_file_path}" to "{file_path}".')
-        shutil.copy(orig_file_path, file_path)
-        logger.debug(f' Finished copying video file from "{orig_file_path}" to "{file_path}".')
-        result = self.__ffmpeg_lib.compress_video_file(source_path=file_path, target_path=temp_file_path,
+        shutil.copy(orig_file_path, temp_file_path)
+        logger.debug(f' Finished copying video file from "{orig_file_path}" to "{temp_file_path}".')
+        result = self.__ffmpeg_lib.compress_video_file(source_path=temp_file_path, target_path=new_file_path,
                                                        compression_max_width=self.__compression_ffmpeg_video_max_width,
                                                        compression_preset=self.__compression_ffmpeg_video_preset,
                                                        ffmpeg_threads=self.__ffmpeg_threads, overwrite=True,
                                                        process_priority_class=self.__ffmpeg_process_priority_class,
                                                        process_set_priority_timeout=self.__process_set_priority_timeout)
 
-        self._compress_video_file_teardown(result, orig_file_path, file_path, temp_file_path)
+        self._compress_video_file_teardown(result, orig_file_path, temp_file_path, new_file_path)
         return result
 
     def _compress_video_file_setup(self, file_path, temp_file_path):
@@ -227,54 +227,54 @@ class MegaManager(object):
             if path.exists(possible_prev_file_path):
                 self.__lib.delete_local_file(file_path=possible_prev_file_path)
 
-    def _compress_video_file_teardown(self, result, orig_file_path, file_path, temp_file_path):
+    def _compress_video_file_teardown(self, result, orig_file_path, temp_file_path, new_file_path):
         """
         Teardown for compress video file.
 
         Args:
             result (bool): Result of video file compression.
             orig_file_path (str): Original file path to compress.
-            file_path (str): Temporary file path to compress.
-            temp_file_path (str): Temporary compress destination file path.
+            temp_file_path (str): Temporary file path that is the source file to compress.
+            new_file_path (str): Temporary compress target file path with "_NEW" appended.
         """
         logger = getLogger('MegaManager._compress_video_file_teardown')
         logger.setLevel(self.__log_level)
 
         logger.debug(' Video file compression teardown.')
 
-        if result and path.exists(temp_file_path):
-
-            if path.exists(file_path):
-                self.__lib.delete_local_file(file_path=file_path)
-
+        if result and path.exists(new_file_path):
+            logger.debug(' Video file could be compressed "%s"!' % temp_file_path)
             dir_path = path.dirname(orig_file_path)
-            new_file_path = path.join(dir_path, sub('_NEW', '', path.basename(temp_file_path)))
-            if path.exists(new_file_path):
-                self.__lib.delete_local_file(file_path=new_file_path)
-
-            if path.exists(orig_file_path):
-                self.__lib.delete_local_file(file_path=orig_file_path)
-
-            if not self.__lib.rename_file(old_name=temp_file_path, new_name=new_file_path):
+            final_file_path = path.join(dir_path, sub('_NEW', '', path.basename(new_file_path)))
+            if path.exists(temp_file_path):
                 self.__lib.delete_local_file(file_path=temp_file_path)
+            if path.exists(new_file_path):
+                if path.exists(final_file_path):
+                    self.__lib.delete_local_file(file_path=final_file_path)
+                self.__lib.rename_file(old_name=new_file_path, new_name=final_file_path)
+                if path.exists(orig_file_path):
+                    self.__lib.delete_local_file(file_path=orig_file_path)
+                if path.exists(new_file_path):
+                    self.__lib.delete_local_file(file_path=new_file_path)
 
             logger.debug(' Video file compressed successfully "%s" into "%s"!' % (
-                orig_file_path, new_file_path))
-            file_md5_hash = self.__lib.get_file_md5_hash(new_file_path)
+                orig_file_path, final_file_path))
+            file_md5_hash = self.__lib.get_file_md5_hash(final_file_path)
             self.__compressed_video_files.add(file_md5_hash)
             self.__lib.dump_set_into_numpy_file(item_set=self.__compressed_video_files, file_path=self.__compressed_videos_file_path)
-
-        elif path.exists(temp_file_path):
-            logger.debug(' Error, video file could not be compressed "%s"!' % file_path)
-            logger.debug(' Deleting temporary file "%s"!' % temp_file_path)
-            self.__lib.delete_local_file(file_path=temp_file_path)
-
         else:
-            logger.debug(' Error, video file could not be compressed "%s"!' % file_path)
-            file_md5_hash = self.__lib.get_file_md5_hash(file_path)
-            self.__unable_to_compress_video_files.add(file_md5_hash)
-            self.__lib.dump_set_into_numpy_file(item_set=self.__unable_to_compress_video_files,
+            logger.debug(' Error, video file could not be compressed "%s"!' % temp_file_path)
+            logger.debug(' Error, video file could not be compressed "%s"!' % temp_file_path)
+            if path.exists(new_file_path):
+                logger.debug(' Deleting temporary NEW file "%s"!' % new_file_path)
+                self.__lib.delete_local_file(file_path=new_file_path)
+            if path.exists(temp_file_path):
+                file_md5_hash = self.__lib.get_file_md5_hash(temp_file_path)
+                self.__unable_to_compress_video_files.add(file_md5_hash)
+                self.__lib.dump_set_into_numpy_file(item_set=self.__unable_to_compress_video_files,
                                                 file_path=self.__unable_to_compress_videos_file_path)
+                logger.debug(' Deleting temporary file "%s"!' % temp_file_path)
+                self.__lib.delete_local_file(file_path=temp_file_path)
 
         logger.debug(' Successfully completed video file compression teardown.')
 
@@ -1251,7 +1251,6 @@ class MegaManager(object):
                             file_list = self._get_all_files(root_path=pathMapping.local_path)
                             shuffle(file_list)
                             self._create_thread_compress_video_files(file_list=file_list)
-
                 non_profile_threads = list(self.__threads)
                 for profile in sync_profiles_randomized:
                     if self.__mega_manager_output_profile_data_path:
