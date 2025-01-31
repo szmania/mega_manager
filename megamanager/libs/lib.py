@@ -508,7 +508,7 @@ class Lib(object):
         logger.setLevel(self.__log_level)
 
         logger.debug(' Renaming file "{}" to "{}."'.format(old_name, new_name))
-        for retry in range(100):
+        for retry in range(10):
             try:
                 shutil.move(old_name, new_name)
                 logger.debug(' Rename succeeded!')
@@ -517,7 +517,7 @@ class Lib(object):
             except Exception as e:
                 logger.error(' Exception: {}'.format(e))
                 logger.debug(" Rename failed, retrying...")
-                if 'Cannot create a file when that file already exists' in e:
+                if 'Cannot create a file when that file already exists' in str(e):
                     self.delete_local_file(file_path=new_name)
         return False
 

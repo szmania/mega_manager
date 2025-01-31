@@ -88,6 +88,7 @@ class MegaManager(object):
         self.__ffmpeg_process_priority_class = None
         self.__ffmpeg_log_path = None
         self.__ffmpeg_threads = None
+        self.__max_video_compression_threads = None
 
         self.__sync_profiles = []
 
@@ -301,7 +302,6 @@ class MegaManager(object):
                         logger.warning(' File "{}" is a temporary file. Deleting.'.format(local_file_path))
                         self.__lib.delete_local_file(local_file_path)
                         continue
-
                     file_md5_hash = self.__lib.get_file_md5_hash(local_file_path)
                     if (file_md5_hash not in self.__compressed_video_files) \
                         and (file_md5_hash not in self.__unable_to_compress_video_files):
@@ -457,7 +457,6 @@ class MegaManager(object):
         logger.setLevel(self.__log_level)
 
         logger.debug(' Creating thread to compress local video files.')
-
         try:
             t_compress = Thread(target=self._compress_video_files, args=(file_list,), name='thread_compress_videos')
             self.__threads.append(t_compress)
@@ -1173,12 +1172,14 @@ class MegaManager(object):
             totalRemoteSize += pathMappingRemoteSize
         return profile
 
-    def _wait_for_threads_to_finish(self, threads=None, timeout=None):
+    def _wait_for_threads_to_finish(self, threads=None, timeout=None, max_video_compression_threads=None):
         """
         Wait for threads to finish.
 
         Args:
+            threads (List[threading.Thread]): List of threads to wait for.
             timeout (int): Maximum time in seconds to wait for threads.
+            max_video_compression_threads (int): Maximum video compression threads to wait for.
         """
         logger = getLogger('MegaManager._wait_for_threads_to_finish')
         logger.setLevel(self.__log_level)
@@ -1186,14 +1187,22 @@ class MegaManager(object):
         threads = threads if threads else self.__threads
         logger.debug(' Waiting for threads to finish: {}'.format(threads))
         start_time = time()
-
         while len(threads) > 0:
+            video_compression_threads = 0
             if (timeout and not time() - start_time > timeout) or not timeout:
                 for thread in threads:
-                    if not thread.isAlive():
+                    if not thread.is_alive():
                         threads.remove(thread)
                         logger.info(' Thread "%s" finished!' % thread.name)
                         logger.debug(' Threads left: %d' % len(threads))
+                    else:
+                        if thread.name.startswith('thread_compress_videos'):
+                            video_compression_threads+=1
+                if max_video_compression_threads and video_compression_threads < max_video_compression_threads:
+                    return
+                elif max_video_compression_threads:
+                    logger.debug(f' Video compression threads left: {video_compression_threads}')
+                    logger.debug(f' Max video compression threads allowed: {max_video_compression_threads}')
             else:
                 logger.debug(' TIMED OUT waiting for threads to complete! Timeout %d (seconds)' % timeout)
                 return
@@ -1227,7 +1236,8 @@ class MegaManager(object):
             while True:
                 sync_profiles_randomized = self.__sync_profiles[:]
                 shuffle(sync_profiles_randomized)
-                for profile in sync_profiles_randomized:
+                compression_threads = []
+                for idx, profile in enumerate(sync_profiles_randomized):
                     for pathMapping in profile.path_mappings:
                         attempt = 0
                         while not path.exists(pathMapping.local_path):
@@ -1251,7 +1261,9 @@ class MegaManager(object):
                             file_list = self._get_all_files(root_path=pathMapping.local_path)
                             shuffle(file_list)
                             self._create_thread_compress_video_files(file_list=file_list)
-                non_profile_threads = list(self.__threads)
+                        self._wait_for_threads_to_finish(threads=self.__threads,
+                                                     max_video_compression_threads=self.__max_video_compression_threads)
+                compression_threads = list(self.__threads)
                 for profile in sync_profiles_randomized:
                     if self.__mega_manager_output_profile_data_path:
                         self._create_thread_output_profile_data(profile=profile)
@@ -1264,7 +1276,7 @@ class MegaManager(object):
                         self._create_thread_download(profile=profile)
                         self._create_thread_upload(profile=profile)
 
-                    profile_threads = [item for item in self.__threads if item not in non_profile_threads]
+                    profile_threads = [item for item in self.__threads if item not in compression_threads]
                     self._wait_for_threads_to_finish(threads=profile_threads)
 
                 self._wait_for_threads_to_finish()
