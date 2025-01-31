@@ -158,9 +158,8 @@ class Lib(object):
         """
         logger = getLogger('Lib._thread_set_priority_once_proc_starts')
         logger.setLevel(self.__log_level)
-
+        sleep(10)
         procs = self._find_procs_by_name(name=process_name, timeout=process_set_priority_timeout)
-
         for proc in procs:
             self._set_proc_priority(proc=proc, priority_class=priority_class)
 
@@ -274,7 +273,7 @@ class Lib(object):
                 return True
 
         except Exception as e:
-            logger.warning(' Exception: {}'.format(e))
+            logger.exception(' Exception: {}'.format(e))
 
         logger.error(' Error when running command "%s".' % command)
         return False

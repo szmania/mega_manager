@@ -177,12 +177,12 @@ class MegaManager(object):
             logger.warning(' Exception: {}'.format(e))
             return False
 
-    def _compress_video_file(self, file_path):
+    def _compress_video_file(self, orig_file_path):
         """
         Compress given video file path.
 
         Args:
-            file_path: Path to video file to compress.
+            orig_file_path: Path to video file to compress.
 
         Returns:
             Boolean: Whether compression operation was successful or not.
@@ -190,9 +190,7 @@ class MegaManager(object):
         logger = getLogger('MegaManager._compress_video_file')
         logger.setLevel(self.__log_level)
 
-        logger.debug(' Compressing video file: "{}"'.format(file_path))
-        new_file_path = file_path.rsplit(".", 1)[0] + '_NEW.mp4'
-        orig_file_path = file_path
+        logger.debug(' Compressing video file: "{}"'.format(orig_file_path))
         temp_dir = tempfile.gettempdir()
         temp_file_path = path.join(temp_dir, path.basename(orig_file_path))
         if path.exists(temp_file_path):
@@ -200,6 +198,7 @@ class MegaManager(object):
         logger.debug(f' Copying video file from "{orig_file_path}" to "{temp_file_path}".')
         shutil.copy(orig_file_path, temp_file_path)
         logger.debug(f' Finished copying video file from "{orig_file_path}" to "{temp_file_path}".')
+        new_file_path = temp_file_path.rsplit(".", 1)[0] + '_NEW.mp4'
         result = self.__ffmpeg_lib.compress_video_file(source_path=temp_file_path, target_path=new_file_path,
                                                        compression_max_width=self.__compression_ffmpeg_video_max_width,
                                                        compression_preset=self.__compression_ffmpeg_video_preset,
@@ -306,7 +305,7 @@ class MegaManager(object):
                     file_md5_hash = self.__lib.get_file_md5_hash(local_file_path)
                     if (file_md5_hash not in self.__compressed_video_files) \
                         and (file_md5_hash not in self.__unable_to_compress_video_files):
-                        self._compress_video_file(file_path=local_file_path)
+                        self._compress_video_file(orig_file_path=local_file_path)
                     else:
                         logger.debug(' Video file already compressed or previously unable to compress: "{}"'.format(local_file_path))
             logger.debug(' Success, finished compressing video files.')
@@ -1273,7 +1272,7 @@ class MegaManager(object):
                 sleep(self.__sleep_time_between_runs_seconds)
 
         except Exception as e:
-            logger.debug(' Exception: ' + str(e))
+            logger.exception(' Exception: ' + str(e))
             result = 1
         finally:
             self._teardown()

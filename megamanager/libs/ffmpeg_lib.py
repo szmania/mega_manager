@@ -55,7 +55,7 @@ class FFMPEG_Lib(object):
 
         logger = getLogger('FFMPEG_Lib.compress_video_file')
         logger.setLevel(self.__log_level)
-        logger.debug(' Compressing video file: "%s"' % source_path)
+        logger.debug(f' Compressing video file "{source_path}" to "{target_path}"')
 
         if overwrite:
             logger.debug(' Overwrite set to "True". Removing target file: "%s"' % target_path)
@@ -63,7 +63,7 @@ class FFMPEG_Lib(object):
                 try:
                     remove(target_path)
                 except Exception as e:
-                    print(' Exception: %s' % str(e))
+                    logger.exception(' Exception: %s' % str(e))
                     pass
 
         cmd = ('ffmpeg -i "{source_path}" -vf "scale=\'if(lte(iw,{compression_max_width}), {compression_max_width}, iw)\':-2" '
