@@ -195,7 +195,9 @@ class MegaManager(object):
         orig_file_path = file_path
         temp_dir = tempfile.gettempdir()
         temp_file_path = path.join(temp_dir, path.basename(orig_file_path))
-        logger.debug(f' Copying video file from "{orig_file_path}" to "{file_path}".')
+        if path.exists(temp_file_path):
+            self.__lib.delete_local_file(file_path=temp_file_path)
+        logger.debug(f' Copying video file from "{orig_file_path}" to "{temp_file_path}".')
         shutil.copy(orig_file_path, temp_file_path)
         logger.debug(f' Finished copying video file from "{orig_file_path}" to "{temp_file_path}".')
         result = self.__ffmpeg_lib.compress_video_file(source_path=temp_file_path, target_path=new_file_path,
@@ -204,7 +206,6 @@ class MegaManager(object):
                                                        ffmpeg_threads=self.__ffmpeg_threads, overwrite=True,
                                                        process_priority_class=self.__ffmpeg_process_priority_class,
                                                        process_set_priority_timeout=self.__process_set_priority_timeout)
-
         self._compress_video_file_teardown(result, orig_file_path, temp_file_path, new_file_path)
         return result
 
