@@ -93,21 +93,26 @@ class CompressImages_Lib:
         logger.debug(' Compressing JPEG or JPG image file "%s".' % file_path)
         compressed = False
         skipped = False
-        result = None
+        out, err = None, None
         try:
-            result = self.__lib.exec_cmd_and_return_output(command='jpegoptim --max={quality_percentage} "{file_path}"'.format(
+            out, err = self.__lib.exec_cmd_and_return_output(command='jpegoptim --max={quality_percentage} "{file_path}"'.format(
                 quality_percentage=quality_percentage, file_path=file_path))
         except Exception as e:
             logger.error(' Exception: {}'.format(e))
-        if 'optimized' in result[0]:
-            logger.debug(' Success, JPEG or JPG image file "%s" compressed successfully.' % file_path)
-            return True
-        elif 'skipped' in result[0]:
-            logger.debug(' JPEG or JPG file already optimized! File was skipped: "{}"'.format(file_path))
-            return True
-        else:
+        if not out:
             logger.debug(' Error, JPEG or JPG image file "%s" NOT compressed successfully!' % file_path)
             return False
+        else:
+            logger.debug(f' Image compression output: {out}')
+            if 'optimized' in str(out):
+                logger.debug(' Success, JPEG or JPG image file "%s" compressed successfully.' % file_path)
+                return True
+            elif 'skipped' in str(out):
+                logger.debug(' JPEG or JPG file already optimized! File was skipped: "{}"'.format(file_path))
+                return True
+            else:
+                logger.debug(' Error, JPEG or JPG image file "%s" NOT compressed successfully!' % file_path)
+                return False
 
 
     def delete_backups_in_dir(self, dirPath):
