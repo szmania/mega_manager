@@ -103,7 +103,7 @@ class CompressImage(ProcessBase):
 
         try:
             # Open the image
-            with open(backupname, 'rb', encoding='utf-8') as file:
+            with open(backupname, 'rb') as file:
                 img = Image.open(file, encoding='utf-8')
 
                 # Check that it's a supported format
