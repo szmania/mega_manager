@@ -196,7 +196,7 @@ class MegaTools_Lib(object):
         logger.debug(' Getting file extension from "%s"' % line)
         fileExt = None
         try:
-            fileExt = path.splitext(split(':\d{2} ', line)[1])[1]
+            fileExt = path.splitext(split(r':\d{2} ', line)[1])[1]
         except Exception as e:
             logger.error('Exception: %s' % str(e))
         finally:
@@ -221,7 +221,7 @@ class MegaTools_Lib(object):
         logger.debug(' Getting file path from "%s"' % line)
         remote_filePath = None
         try:
-            remote_filePath = split(':\d{2} ', line)[1]
+            remote_filePath = split(r':\d{2} ', line)[1]
         except Exception as e:
             logger.error('Exception: %s' % str(e))
         finally:
@@ -583,7 +583,7 @@ class MegaTools_Lib(object):
                 lines = out.split(linesep)
                 remote_files = []
                 for line in lines:
-                    if not line == '' and len(findall("\?", line)) == 0:
+                    if not line == '' and len(findall(r"\?", line)) == 0:
                         remote_files.append(line)
                 logger.debug(' Success, could get remote file paths.')
                 return remote_files
@@ -660,7 +660,7 @@ class MegaTools_Lib(object):
         logger.setLevel(self.__log_level)
         logger.info(' Determining if file is temp mega file: "{}"'.format(file_path))
         try:
-            if len(findall('^.*\.megatmp\..*$', file_path)) > 0:
+            if len(findall(r'^.*\.megatmp\..*$', file_path)) > 0:
                 logger.info(' File is temp mega file: "{}"'.format(file_path))
                 return True
 
@@ -780,8 +780,8 @@ class MegaTools_Lib(object):
             lines = out.split(linesep)
             for line in lines:
                 if not line == '':
-                    if len(split(':\d{2} ', line)) > 1:
-                        remote_filePath = split(':\d{2} ', line)[1]
+                    if len(split(r':\d{2} ', line)) > 1:
+                        remote_filePath = split(r':\d{2} ', line)[1]
                         dir_subPath = sub(remote_root, '', remote_filePath)
                         local_dir = localRoot_adj + '/' + dir_subPath
                         remote_dir = remote_root + '/' + dir_subPath

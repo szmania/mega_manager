@@ -159,7 +159,7 @@ class MegaManager(object):
                 if local_file_ext.lower() in self.__compression_image_extensions:
                     while not path.exists(local_file_path):
                         sleep(1)
-                    if local_file_ext in self.__image_temp_file_extensions or search('^.*\.megatmp\..*$', local_file_path):
+                    if local_file_ext in self.__image_temp_file_extensions or search(r'^.*\.megatmp\..*$', local_file_path):
                         logger.warning(' File "{}" is temporary file. Deleting.'.format(local_file_path))
                         self.__lib.delete_local_file(local_file_path)
                         continue
@@ -298,7 +298,7 @@ class MegaManager(object):
                 if local_file_ext.lower() in self.__compression_video_extensions:
                     while not path.exists(local_file_path):
                         sleep(1)
-                    if local_file_path.endswith('_NEW.mp4') or search('^.*\.megatmp\..*$', local_file_path):
+                    if local_file_path.endswith('_NEW.mp4') or search(r'^.*\.megatmp\..*$', local_file_path):
                         logger.warning(' File "{}" is a temporary file. Deleting.'.format(local_file_path))
                         self.__lib.delete_local_file(local_file_path)
                         continue
@@ -815,7 +815,7 @@ class MegaManager(object):
                             logger.debug(' Local file exists. Determining if local file outdated compared to remote counterpart: "%s"' % local_file_path)
                             local_file_size = path.getsize(local_file_path)
 
-                            if search('^.*\.megatmp\..*$', local_file_path):
+                            if search(r'^.*\.megatmp\..*$', local_file_path):
                                 logger.warning(' File "{}" is temporary file. Deleting.'.format(local_file_path))
                                 self.__lib.delete_local_file(local_file_path)
                                 continue
