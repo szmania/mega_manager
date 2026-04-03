@@ -256,11 +256,14 @@ class MegaManager(object):
                     logger.debug(f' Original file size ({orig_file_size} ) is larger than the new file size ({new_file_size}). Replacing old file with new: "{orig_file_path}"')
                     if path.exists(final_file_path):
                         self.__lib.delete_local_file(file_path=final_file_path)
-                    self.__lib.rename_file(old_name=new_file_path, new_name=final_file_path)
-                    if path.exists(orig_file_path):
-                        self.__lib.delete_local_file(file_path=orig_file_path)
-                    if path.exists(new_file_path):
-                        self.__lib.delete_local_file(file_path=new_file_path)
+                    rename_successful = self.__lib.rename_file(old_name=new_file_path, new_name=final_file_path)
+                    if rename_successful:
+                        if path.exists(orig_file_path):
+                            self.__lib.delete_local_file(file_path=orig_file_path)
+                        if path.exists(new_file_path):
+                            self.__lib.delete_local_file(file_path=new_file_path)
+                    else:
+                        logger.error(f"Failed to move compressed file from {new_file_path} to {final_file_path}. The original file will not be deleted.")
                 else:
                     logger.debug(f' Original file size ({orig_file_size}) is smaller or equal to the new file size ({new_file_size}). Not going to replace the old file: "{orig_file_path}"')
             logger.debug(' Video file compressed successfully "%s" into "%s"!' % (
