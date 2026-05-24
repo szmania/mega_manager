@@ -34,7 +34,7 @@ class FFMPEG_Lib(object):
         self.__lib = Lib(log_level=log_level)
 
     def compress_video_file(self, source_path, target_path, compression_max_width=1280, compression_preset="medium",
-                            ffmpeg_threads=1, overwrite=False,
+                            ffmpeg_threads=1, overwrite=False, no_window=False,
                             process_priority_class="NORMAL_PRIORITY_CLASS", process_set_priority_timeout=60):
         """
         Compress video file.
@@ -46,6 +46,7 @@ class FFMPEG_Lib(object):
             compression_preset (str): Compression preset. ie: "fast" or "slow"
             ffmpeg_threads (int): Number of threads to use when running ffmpeg.
             overwrite (bool): Overwrite target file if it exists.
+            no_window (bool): If true, no window will be displayed when executing command.
             process_priority_class (str): Priority level to set for process. ie: "NORMAL_PRIORITY_CLASS"
             process_set_priority_timeout (int): Timeout in seconds to wait for process to start after setting priority.
 
@@ -72,7 +73,7 @@ class FFMPEG_Lib(object):
             ffmpeg_threads=ffmpeg_threads, target_path=target_path)
 
         process_name = 'ffmpeg.exe' if system() == 'Windows' else 'ffmpeg'
-        result = self.__lib.exec_cmd(command=cmd, no_window=True, output_file=self.__ffmpeg_log, process_priority_class=process_priority_class,
+        result = self.__lib.exec_cmd(command=cmd, no_window=no_window, output_file=self.__ffmpeg_log, process_priority_class=process_priority_class,
                                      process_name=process_name, process_set_priority_timeout=process_set_priority_timeout)
 
         if result:

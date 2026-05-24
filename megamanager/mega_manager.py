@@ -24,7 +24,7 @@ from re import findall, IGNORECASE, match, search, sub
 from string import Formatter as string_formatter
 from syncprofile import SyncProfile
 from sys import stdout
-from threading import Thread
+from threading import Thread, Lock
 from time import sleep, time
 
 
@@ -92,6 +92,9 @@ class MegaManager(object):
 
         self.__sync_profiles = []
 
+        self.__video_compression_lock = Lock()
+        self.__image_compression_lock = Lock()
+
         self._setup(kwargs=kwargs)
 
     def _assign_attributes(self, **kwargs):
@@ -118,26 +121,27 @@ class MegaManager(object):
         logger = getLogger('MegaManager._compress_image_file')
         logger.setLevel(self.__log_level)
         logger.debug(' Compressing image file: "{}"'.format(file_path))
-        compressed = self.__compress_images_lib.compress_image_file(file_path=file_path,
-                                                                    jpeg_compression_quality_percentage=
-                                                                    self.__compression_jpeg_quality_percentage,
-                                                                    delete_backup=True,
-                                                                    delete_corrupt_images=True)
-        if compressed:
-            logger.debug(' Image file compressed successfully "%s"!' % file_path)
-            file_md5_hash = self.__lib.get_file_md5_hash(file_path)
-            self.__compressed_image_files.add(file_md5_hash)
-            self.__lib.dump_set_into_numpy_file(item_set=self.__compressed_image_files,
-                                                file_path=self.__compressed_images_file_path)
-            return True
+        with self.__image_compression_lock:
+            compressed = self.__compress_images_lib.compress_image_file(file_path=file_path,
+                                                                        jpeg_compression_quality_percentage=
+                                                                        self.__compression_jpeg_quality_percentage,
+                                                                        delete_backup=True,
+                                                                        delete_corrupt_images=True)
+            if compressed:
+                logger.debug(' Image file compressed successfully "%s"!' % file_path)
+                file_md5_hash = self.__lib.get_file_md5_hash(file_path)
+                self.__compressed_image_files.add(file_md5_hash)
+                self.__lib.dump_set_into_numpy_file(item_set=self.__compressed_image_files,
+                                                    file_path=self.__compressed_images_file_path)
+                return True
 
-        else:
-            logger.debug(' Error, image file could not be compressed "%s"!' % file_path)
-            file_md5_hash = self.__lib.get_file_md5_hash(file_path)
-            self.__unable_to_compress_image_files.add(file_md5_hash)
-            self.__lib.dump_set_into_numpy_file(item_set=self.__unable_to_compress_image_files,
-                                                file_path=self.__unable_to_compress_images_file_path)
-            return False
+            else:
+                logger.debug(' Error, image file could not be compressed "%s"!' % file_path)
+                file_md5_hash = self.__lib.get_file_md5_hash(file_path)
+                self.__unable_to_compress_image_files.add(file_md5_hash)
+                self.__lib.dump_set_into_numpy_file(item_set=self.__unable_to_compress_image_files,
+                                                    file_path=self.__unable_to_compress_images_file_path)
+                return False
 
     def _compress_image_files(self, file_list):
         """
@@ -192,22 +196,24 @@ class MegaManager(object):
         logger.setLevel(self.__log_level)
 
         logger.debug(' Compressing video file: "{}"'.format(orig_file_path))
-        temp_dir = tempfile.gettempdir()
-        temp_file_path = path.join(temp_dir, path.basename(orig_file_path))
-        if path.exists(temp_file_path):
-            self.__lib.delete_local_file(file_path=temp_file_path)
-        logger.debug(f' Copying video file from "{orig_file_path}" to "{temp_file_path}".')
-        shutil.copy(orig_file_path, temp_file_path)
-        logger.debug(f' Finished copying video file from "{orig_file_path}" to "{temp_file_path}".')
-        new_file_path = temp_file_path.rsplit(".", 1)[0] + '_NEW.mp4'
-        result = self.__ffmpeg_lib.compress_video_file(source_path=temp_file_path, target_path=new_file_path,
-                                                       compression_max_width=self.__compression_ffmpeg_video_max_width,
-                                                       compression_preset=self.__compression_ffmpeg_video_preset,
-                                                       ffmpeg_threads=self.__ffmpeg_threads, overwrite=True,
-                                                       process_priority_class=self.__ffmpeg_process_priority_class,
-                                                       process_set_priority_timeout=self.__process_set_priority_timeout)
-        self._compress_video_file_teardown(result, orig_file_path, temp_file_path, new_file_path)
-        return result
+        with self.__video_compression_lock:
+            temp_dir = tempfile.gettempdir()
+            temp_file_path = path.join(temp_dir, path.basename(orig_file_path))
+            if path.exists(temp_file_path):
+                self.__lib.delete_local_file(file_path=temp_file_path)
+            logger.debug(f' Copying video file from "{orig_file_path}" to "{temp_file_path}".')
+            shutil.copy(orig_file_path, temp_file_path)
+            logger.debug(f' Finished copying video file from "{orig_file_path}" to "{temp_file_path}".')
+            new_file_path = temp_file_path.rsplit(".", 1)[0] + '_NEW.mp4'
+            result = self.__ffmpeg_lib.compress_video_file(source_path=temp_file_path, target_path=new_file_path,
+                                                           compression_max_width=self.__compression_ffmpeg_video_max_width,
+                                                           compression_preset=self.__compression_ffmpeg_video_preset,
+                                                           ffmpeg_threads=self.__ffmpeg_threads, overwrite=True,
+                                                           no_window=True,
+                                                           process_priority_class=self.__ffmpeg_process_priority_class,
+                                                           process_set_priority_timeout=self.__process_set_priority_timeout)
+            self._compress_video_file_teardown(result, orig_file_path, temp_file_path, new_file_path)
+            return result
 
     def _compress_video_file_setup(self, file_path, temp_file_path):
         """

@@ -38,6 +38,9 @@ def get_args():
 
     parser.add_argument('--log', dest='log_level', help='Set logging level')
 
+    parser.add_argument('--max-video-compression-threads', dest='max_video_compression_threads', type=int, default=None,
+                        help='Maximum number of videos to compress at once.')
+
     parser.add_argument('--profile-output-data', dest='mega_manager_output_profile_data_path', action='store_true', default=False,
                         help='If true, this will output all profile data to standard output.')
 
